@@ -102,9 +102,14 @@
 
         <div class="flex items-center gap-3 md:gap-4">
             <!-- Voice Indicator -->
-            <button id="voiceStatus" class="text-slate-600 mr-2 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset)">
-                <i class="fa-solid fa-microphone"></i>
-            </button>
+            <div class="flex items-center">
+                <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset)">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                <button onclick="document.getElementById('voiceHelpModal').showModal()" class="text-slate-500 hover:text-blue-400 transition p-2" title="Voice Commands Help">
+                    <i class="fa-solid fa-circle-info text-lg"></i>
+                </button>
+            </div>
 
             <!-- Settings -->
             <button onclick="document.getElementById('settingsModal').showModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white p-2 px-3 rounded-lg border border-slate-700 transition" title="Settings">
@@ -135,6 +140,57 @@
             </button>
         </div>
     </nav>
+
+    <!-- Voice Help Modal -->
+    <dialog id="voiceHelpModal" class="bg-slate-800 text-white rounded-xl shadow-2xl p-6 border border-slate-600 w-full max-w-md">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-microphone-lines mr-2 text-blue-400"></i> Voice Commands</h3>
+            <form method="dialog">
+                <button class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </form>
+        </div>
+        
+        <div class="space-y-6 text-sm">
+            <div>
+                <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">1. Wake Word</h4>
+                <p class="text-slate-300 mb-2 italic">Say one of these to activate command mode (Mic turns red):</p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs text-emerald-400">"Hey SpinMetrics"</span>
+                    <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs">"SpinMetrics"</span>
+                    <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs">"Spin Bike"</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Start Action</h4>
+                    <p class="text-slate-400 font-mono text-xs">"Start", "Begin", "Go", "Ride"</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-rose-400 uppercase tracking-widest mb-2">Stop Action</h4>
+                    <p class="text-slate-400 font-mono text-xs">"Stop", "End", "Finish", "Done"</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">Pause / Resume</h4>
+                    <p class="text-slate-400 font-mono text-xs">"Pause", "Resume", "Toggle", "Wait", "Hold"</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">Record Lap</h4>
+                    <p class="text-slate-400 font-mono text-xs">"Lap", "Next", "Flag", "Mark"</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2">Switch View</h4>
+                    <p class="text-slate-400 font-mono text-xs">"Switch", "Duration", "Swap", "Change"</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Tip: You can say them together, e.g., <span class="text-slate-300">"Hey SpinMetrics Start"</span>. The mic stays active for 6 seconds after a wake word.
+                </p>
+            </div>
+        </div>
+    </dialog>
 
     <!-- Settings Modal -->
     <dialog id="settingsModal" class="bg-slate-800 text-white rounded-xl shadow-2xl p-6 border border-slate-600 w-full max-sm:max-w-full">
@@ -191,8 +247,7 @@
                     <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                 </label>
             </div>
-            <p class="text-[10px] text-slate-500 mt-0 pt-0">Say "Hey SpinMetrics" to wake up. (5s timeout)</p>
-
+            
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
                     <label class="text-sm font-medium text-white flex items-center gap-2">
@@ -209,7 +264,6 @@
                         <span class="text-xs text-slate-500 font-bold ml-2">RPM</span>
                         <input type="number" id="settingTargetRpmValue" value="90" min="40" max="150" class="bg-transparent text-white w-full focus:outline-none font-mono">
                     </div>
-                    <p class="text-[10px] text-slate-500 mt-1">RPM card will glow green when within ±3 RPM.</p>
                 </div>
             </div>
 
@@ -483,11 +537,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM Loaded. Initializing...");
             
-            // Connection Listeners
             document.getElementById('connectBtn').addEventListener('click', connectToBike);
             document.getElementById('connectHrBtn').addEventListener('click', connectToHeartRate);
-            
-            // UI Controls
             document.getElementById('startBtn').addEventListener('click', startSession);
             document.getElementById('stopBtn').addEventListener('click', stopSession);
             document.getElementById('lapBtn').addEventListener('click', recordLap);
@@ -496,14 +547,14 @@
             document.getElementById('btnViewToggle').addEventListener('click', toggleView);
             document.getElementById('btnFullScreen').addEventListener('click', toggleFullScreen);
             
-            // Voice Reset icon
             const vs = document.getElementById('voiceStatus');
             if(vs) {
                 vs.onclick = (e) => {
                     log("Manual Voice Reset");
                     if(recognition) {
                         try { recognition.stop(); } catch(err){}
-                        setTimeout(() => startVoiceListening(), 10);
+                        isListeningForCommand = false;
+                        setTimeout(() => startVoiceListening(), 50);
                     } else {
                         initVoiceRecognition();
                         startVoiceListening();
@@ -511,7 +562,6 @@
                 };
             }
             
-            // Setting Listeners
             const elements = ['settingAge', 'settingHrMethod', 'settingRhr', 'settingAudio', 'settingVoice', 'settingTargetRpmEnabled', 'settingTargetRpmValue'];
             elements.forEach(id => {
                 const el = document.getElementById(id);
@@ -534,7 +584,6 @@
             if (window.innerWidth < 768) setView('mobile');
             else setView('desktop');
             
-            // Interaction Guard for Speech
             const enableVoiceOnInteraction = () => {
                 if (prefs.voiceEnabled && !recognition) {
                     initVoiceRecognition();
@@ -562,7 +611,7 @@
             recognition.onstart = () => {
                 const vs = document.getElementById('voiceStatus');
                 if (vs) {
-                    vs.className = "text-blue-500 mr-2 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+                    vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
                     vs.title = "Listening for 'Hey SpinMetrics'";
                 }
                 log("Voice Active");
@@ -577,13 +626,11 @@
             };
 
             recognition.onresult = (event) => {
-                let fullTranscript = '';
+                let fullBuffer = '';
                 for (let i = 0; i < event.results.length; ++i) {
-                    fullTranscript += event.results[i][0].transcript;
+                    fullBuffer += event.results[i][0].transcript;
                 }
-                
-                const cmd = fullTranscript.trim().toLowerCase();
-                if(!cmd) return;
+                const cmd = fullBuffer.trim().toLowerCase();
 
                 const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike'];
                 const matchedWake = wakeWords.some(w => cmd.includes(w));
@@ -612,13 +659,13 @@
         function activateCommandListening() {
             isListeningForCommand = true;
             const vs = document.getElementById('voiceStatus');
-            if (vs) vs.className = "text-rose-500 mr-2 transition p-2 rounded-full border border-rose-500 mic-active";
+            if (vs) vs.className = "text-rose-500 hover:text-rose-400 transition p-2 rounded-full border border-rose-500 mic-active";
             
             if (commandTimeout) clearTimeout(commandTimeout);
             commandTimeout = setTimeout(() => {
                 isListeningForCommand = false;
                 const vs = document.getElementById('voiceStatus');
-                if (vs) vs.className = "text-blue-500 mr-2 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+                if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
             }, 6000); 
         }
 
@@ -627,46 +674,49 @@
                 start: ['start', 'begin', 'go', 'ride'],
                 stop: ['stop', 'end', 'finish', 'done'],
                 pause: ['pause', 'resume', 'toggle', 'wait', 'hold'],
-                lap: ['lap', 'next', 'split', 'flag', 'mark'],
-                switch: ['switch', 'duration', 'swap', 'change view']
+                lap: ['lap', 'next', 'flag', 'mark'],
+                switch: ['switch', 'duration', 'swap', 'change', 'toggle duration']
             };
 
-            if (triggers.start.some(t => cmd.includes(t)) && !document.getElementById('startBtn').disabled) {
+            let commandExecuted = false;
+
+            if (triggers.switch.some(t => cmd.includes(t))) {
+                log("Voice: SWITCH");
+                toggleDurationMode();
+                commandExecuted = true;
+            } else if (triggers.start.some(t => cmd.includes(t)) && !document.getElementById('startBtn').disabled) {
                 log("Voice: START");
                 startSession();
-                isListeningForCommand = false;
+                commandExecuted = true;
             } else if (triggers.stop.some(t => cmd.includes(t)) && !document.getElementById('stopBtn').disabled) {
                 log("Voice: STOP");
                 stopSession();
-                isListeningForCommand = false;
+                commandExecuted = true;
             } else if (triggers.pause.some(t => cmd.includes(t)) && !document.getElementById('pauseBtn').disabled) {
                 log("Voice: PAUSE/RESUME");
                 togglePause();
-                isListeningForCommand = false;
+                commandExecuted = true;
             } else if (triggers.lap.some(t => cmd.includes(t)) && !document.getElementById('lapBtn').disabled) {
                 log("Voice: LAP");
                 recordLap();
-                isListeningForCommand = false;
-            } else if (triggers.switch.some(t => cmd.includes(t))) {
-                log("Voice: SWITCH VIEW");
-                toggleDurationMode();
-                isListeningForCommand = false;
+                commandExecuted = true;
             }
-        }
 
-        function startVoiceListening() {
-            if (recognition) { 
-                try { recognition.start(); } catch(e){} 
-            }
-        }
-
-        function stopVoiceListening() {
-            if (recognition) {
+            if (commandExecuted) {
+                isListeningForCommand = false;
                 try { recognition.stop(); } catch(e){}
             }
         }
 
-        // --- UI LOGIC: DURATION TOGGLE ---
+        function startVoiceListening() {
+            if (recognition) { try { recognition.start(); } catch(e){} }
+        }
+
+        function stopVoiceListening() {
+            if (recognition) { try { recognition.stop(); } catch(e){} }
+        }
+
+        // --- UI LOGIC ---
         function toggleDurationMode() {
             if (displayMode === 'total') {
                 displayMode = 'lap';
@@ -757,7 +807,7 @@
 
         function downloadHistory() {
             if (history.length === 0) {
-                log("No data in history to export.");
+                log("No session history recorded yet.");
                 return;
             }
             let csv = "Date,Duration,Avg RPM,Avg Power,Avg HR\n";
@@ -768,8 +818,10 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `SpinMetrics_History_${new Date().toLocaleDateString()}.csv`;
+            a.download = `SpinMetrics_History_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
@@ -918,20 +970,20 @@
             isPaused = false;
             releaseWakeLock();
             if (lapNumber > 0 && (Date.now() - lastLapTimestamp > 5000)) recordLap();
-            if (sessionData.count > 0) {
+            
+            if (startTime) {
                 history.unshift({
                     date: new Date().toLocaleString(),
                     duration: formatTime(elapsedTime),
-                    avgRpm: Math.round(sessionData.rpmSum / sessionData.count),
-                    avgPower: Math.round(sessionData.powerSum / sessionData.count),
+                    avgRpm: sessionData.count ? Math.round(sessionData.rpmSum / sessionData.count) : 0,
+                    avgPower: sessionData.count ? Math.round(sessionData.powerSum / sessionData.count) : 0,
                     avgHr: sessionData.hrCount ? Math.round(sessionData.hrSum / sessionData.hrCount) : 0
                 });
                 localStorage.setItem('spinMetrics_history', JSON.stringify(history));
                 renderHistory();
                 log('Session Saved');
-            } else {
-                log("Session too short or no data to save.");
             }
+            
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
             document.getElementById('lapBtn').disabled = true;
