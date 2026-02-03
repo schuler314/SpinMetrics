@@ -501,10 +501,8 @@
             if(vs) {
                 vs.onclick = (e) => {
                     log("Manual Voice Reset");
-                    // Force start immediately on click to ensure user gesture is captured
                     if(recognition) {
                         try { recognition.stop(); } catch(err){}
-                        // Re-start will happen in the 'onend' or via direct call
                         setTimeout(() => startVoiceListening(), 10);
                     } else {
                         initVoiceRecognition();
@@ -575,14 +573,11 @@
                     log("Mic Permission Denied.");
                     prefs.voiceEnabled = false;
                     saveSettings();
-                } else if (event.error !== 'no-speech') {
-                    // log("Voice Error: " + event.error);
                 }
             };
 
             recognition.onresult = (event) => {
                 let fullTranscript = '';
-                // Gather full current transcript buffer to catch wake words properly
                 for (let i = 0; i < event.results.length; ++i) {
                     fullTranscript += event.results[i][0].transcript;
                 }
@@ -590,7 +585,6 @@
                 const cmd = fullTranscript.trim().toLowerCase();
                 if(!cmd) return;
 
-                // Reactive Wake Word Logic (Reduced Latency)
                 const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike'];
                 const matchedWake = wakeWords.some(w => cmd.includes(w));
 
@@ -599,7 +593,6 @@
                     activateCommandListening();
                 }
 
-                // If active, process immediately
                 if (isListeningForCommand) {
                     processCommand(cmd);
                 }
@@ -607,7 +600,6 @@
             
             recognition.onend = () => {
                 if (prefs.voiceEnabled) {
-                    // Short delay to avoid loops, but keep it alive
                     setTimeout(() => { 
                         if (prefs.voiceEnabled) {
                             try { recognition.start(); } catch(e){} 
@@ -635,7 +627,8 @@
                 start: ['start', 'begin', 'go', 'ride'],
                 stop: ['stop', 'end', 'finish', 'done'],
                 pause: ['pause', 'resume', 'toggle', 'wait', 'hold'],
-                lap: ['lap', 'next', 'split', 'flag', 'mark']
+                lap: ['lap', 'next', 'split', 'flag', 'mark'],
+                switch: ['switch', 'duration', 'swap', 'change view']
             };
 
             if (triggers.start.some(t => cmd.includes(t)) && !document.getElementById('startBtn').disabled) {
@@ -654,14 +647,16 @@
                 log("Voice: LAP");
                 recordLap();
                 isListeningForCommand = false;
+            } else if (triggers.switch.some(t => cmd.includes(t))) {
+                log("Voice: SWITCH VIEW");
+                toggleDurationMode();
+                isListeningForCommand = false;
             }
         }
 
         function startVoiceListening() {
             if (recognition) { 
-                try { recognition.start(); } catch(e){ 
-                    // recognition already started
-                } 
+                try { recognition.start(); } catch(e){} 
             }
         }
 
@@ -671,11 +666,32 @@
             }
         }
 
-        // --- RESTORED LOGIC: HR ZONES ---
+        // --- UI LOGIC: DURATION TOGGLE ---
+        function toggleDurationMode() {
+            if (displayMode === 'total') {
+                displayMode = 'lap';
+                document.getElementById('mainTimerLabel').innerHTML = `Current Lap <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
+                document.getElementById('subTimerLabel').innerText = "Total Duration";
+                document.getElementById('mainTimerLabel').classList.replace('text-slate-400', 'text-amber-400');
+                document.getElementById('lblAvgRpm').innerText = "Lap RPM";
+                document.getElementById('lblAvgHr').innerText = "Lap HR";
+                document.getElementById('lblAvgPower').innerText = "Lap Watts";
+            } else {
+                displayMode = 'total';
+                document.getElementById('mainTimerLabel').innerHTML = `Total Duration <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
+                document.getElementById('subTimerLabel').innerText = "Current Lap";
+                document.getElementById('mainTimerLabel').classList.replace('text-amber-400', 'text-slate-400');
+                document.getElementById('lblAvgRpm').innerText = "Avg RPM";
+                document.getElementById('lblAvgHr').innerText = "Avg HR";
+                document.getElementById('lblAvgPower').innerText = "Avg Watts";
+            }
+            updateTimers();
+            updateAverages();
+        }
+
         function updateHrZonesUI(hr) {
             const limits = getZoneLimits();
             const zones = [1, 2, 3, 4, 5];
-            
             let currentZone = 0;
             if (hr >= limits[4]) currentZone = 5;
             else if (hr >= limits[3]) currentZone = 4;
@@ -688,13 +704,10 @@
                 const fill = document.getElementById(`fillZ${zIdx}`);
                 const min = zIdx === 1 ? limits[0] : limits[zIdx-2];
                 const max = limits[zIdx-1];
-                
                 let fillPct = 0;
                 if (hr >= max) fillPct = 100;
                 else if (hr > min) fillPct = ((hr - min) / (max - min)) * 100;
-
                 fill.style.height = `${fillPct}%`;
-                
                 if (currentZone === zIdx) {
                     bar.style.flex = '1.8';
                     bar.classList.add('border-slate-400');
@@ -717,14 +730,12 @@
             ];
         }
 
-        // --- RESTORED LOGIC: RESPONSIVE VIEW ---
         function setView(mode) {
             currentViewMode = mode;
             const viewText = document.getElementById('viewText');
             const viewIcon = document.getElementById('viewIcon');
             const grid = document.getElementById('dashboardGrid');
             const btm = document.getElementById('bottomGrid');
-            
             if (mode === 'mobile') {
                 viewIcon.className = 'fa-solid fa-mobile-screen';
                 viewText.innerText = 'Mobile';
@@ -744,9 +755,11 @@
             }
         }
 
-        // --- RESTORED LOGIC: CSV DOWNLOAD ---
         function downloadHistory() {
-            if (history.length === 0) return;
+            if (history.length === 0) {
+                log("No data in history to export.");
+                return;
+            }
             let csv = "Date,Duration,Avg RPM,Avg Power,Avg HR\n";
             history.forEach(s => {
                 csv += `"${s.date}",${s.duration},${s.avgRpm},${s.avgPower},${s.avgHr}\n`;
@@ -768,11 +781,9 @@
                 const server = await bikeDevice.gatt.connect();
                 document.getElementById('bikeDot').className = "w-2 h-2 rounded-full bg-emerald-500";
                 log('Bike Connected');
-                
                 const btn = document.getElementById('connectBtn');
                 btn.className = "flex-1 group flex items-center justify-center gap-2 bg-slate-800 text-emerald-400 font-semibold py-4 px-4 rounded-xl border border-emerald-500/30";
                 btn.innerHTML = '<i class="fa-solid fa-link"></i><span>Bike Active</span>';
-                
                 setupBattery(server, 'bike');
                 const service = await server.getPrimaryService(BIKE_UUID);
                 const characteristics = await service.getCharacteristics();
@@ -792,11 +803,9 @@
                 const server = await hrDevice.gatt.connect();
                 document.getElementById('hrDot').className = "w-2 h-2 rounded-full bg-emerald-500";
                 log('HR Connected');
-                
                 const btn = document.getElementById('connectHrBtn');
                 btn.className = "flex-1 group flex items-center justify-center gap-2 bg-slate-800 text-emerald-400 font-semibold py-4 px-4 rounded-xl border border-emerald-500/30";
                 btn.innerHTML = '<i class="fa-solid fa-link"></i><span>HR Active</span>';
-                
                 setupBattery(server, 'hr');
                 const service = await server.getPrimaryService(HR_SERVICE_UUID);
                 const char = await service.getCharacteristic(HR_CHAR_UUID);
@@ -811,19 +820,16 @@
             const rpm = data.getUint8(3);
             const res = data.getUint8(6);
             const watts = Math.round((rpm * res) / 10);
-
             document.getElementById('rpmValue').textContent = rpm;
             document.getElementById('rpmBar').style.width = `${Math.min((rpm/130)*100, 100)}%`;
             document.getElementById('resistanceValue').textContent = res;
             document.getElementById('powerValue').textContent = watts;
             document.getElementById('powerBar').style.width = `${Math.min((watts/500)*100, 100)}%`;
-
             if (prefs.targetRpmEnabled) {
                 const rc = document.getElementById('rpmCard');
                 if (Math.abs(rpm - prefs.targetRpmValue) <= 3) rc.classList.add('on-target');
                 else rc.classList.remove('on-target');
             }
-
             if (timerInterval && !isPaused) {
                 sessionData.rpmSum += rpm; sessionData.powerSum += watts; sessionData.count++;
                 lapData.rpmSum += rpm; lapData.powerSum += watts; lapData.count++;
@@ -835,16 +841,13 @@
             const val = event.target.value;
             const flags = val.getUint8(0);
             let hr = (flags & 0x01) === 0 ? val.getUint8(1) : val.getUint16(1, true); 
-
             document.getElementById('hrValue').textContent = hr;
             const z = calculateHrZone(hr);
             document.getElementById('hrZoneDisplay').textContent = z.label;
             document.getElementById('hrZoneDisplay').className = `text-2xl font-bold ${z.colorClass} mt-1`;
             updateHrZonesUI(hr);
-
             if (z.zone > previousHrZone && prefs.audioEnabled) playAudioCue('zoneUp');
             previousHrZone = z.zone;
-
             if (timerInterval && !isPaused) {
                 sessionData.hrSum += hr; sessionData.hrCount++;
                 lapData.hrSum += hr; lapData.hrCount++;
@@ -863,10 +866,7 @@
 
         function updateBattUI(type, level) {
             const el = document.getElementById(type + 'Batt');
-            if (el) {
-                el.innerText = `${level}%`;
-                el.classList.remove('hidden');
-            }
+            if (el) { el.innerText = `${level}%`; el.classList.remove('hidden'); }
         }
 
         // --- SESSION LOGIC ---
@@ -874,7 +874,6 @@
             if (timerInterval) return;
             initAudio();
             requestWakeLock();
-            
             if (!startTime) {
                 sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
                 lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
@@ -886,15 +885,12 @@
                 lastLapTimestamp = Date.now();
                 totalPausedTime = 0;
             } 
-            
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
             document.getElementById('lapBtn').disabled = false;
             document.getElementById('pauseBtn').disabled = false;
-            
             document.getElementById('timerDot').className = "w-2 h-2 rounded-full bg-emerald-500 pulse-anim";
             document.getElementById('timerState').innerText = "Tracking";
-            
             timerInterval = setInterval(updateTimers, 1000);
             log('Session Started');
         }
@@ -921,9 +917,7 @@
             timerInterval = null;
             isPaused = false;
             releaseWakeLock();
-
             if (lapNumber > 0 && (Date.now() - lastLapTimestamp > 5000)) recordLap();
-            
             if (sessionData.count > 0) {
                 history.unshift({
                     date: new Date().toLocaleString(),
@@ -935,8 +929,9 @@
                 localStorage.setItem('spinMetrics_history', JSON.stringify(history));
                 renderHistory();
                 log('Session Saved');
+            } else {
+                log("Session too short or no data to save.");
             }
-
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
             document.getElementById('lapBtn').disabled = true;
@@ -950,12 +945,10 @@
             if (!startTime) return;
             const currentDur = Math.floor(((Date.now() - lapStartTime) - totalPausedTime) / 1000);
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
-            
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
             row.innerHTML = `<td class="px-4 py-3">${lapNumber}</td><td class="px-4 py-3 font-bold">${formatTime(currentDur)}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3">${avgHr}</td><td class="px-4 py-3 text-xs">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
-
             lapNumber++;
             lapStartTime = Date.now();
             lastLapTimestamp = Date.now(); 
@@ -963,7 +956,6 @@
             log('Lap Recorded');
         }
 
-        // --- PREFERENCES & UTILS ---
         function saveSettings() {
             prefs.age = parseInt(document.getElementById('settingAge').value) || 40;
             prefs.hrMethod = document.getElementById('settingHrMethod').value;
@@ -986,7 +978,6 @@
             document.getElementById('settingVoice').checked = prefs.voiceEnabled;
             document.getElementById('settingTargetRpmEnabled').checked = prefs.targetRpmEnabled;
             document.getElementById('settingTargetRpmValue').value = prefs.targetRpmValue;
-            
             const h = localStorage.getItem('spinMetrics_history');
             if (h) { history = JSON.parse(h); renderHistory(); }
         }
@@ -1001,11 +992,15 @@
             return { zone: 0, label: 'Zone 0', colorClass: 'text-slate-400' };
         }
 
+        let elapsedTime = 0;
         function updateTimers() {
+            if (!startTime) return;
             elapsedTime = Math.floor(((Date.now() - startTime) - totalPausedTime) / 1000);
             const lapElapsed = Math.floor(((Date.now() - lapStartTime) - totalPausedTime) / 1000);
-            document.getElementById('mainTimerValue').textContent = formatTime(elapsedTime);
-            document.getElementById('subTimerValue').textContent = formatTime(lapElapsed > 0 ? lapElapsed : 0);
+            const displayMain = (displayMode === 'total') ? elapsedTime : lapElapsed;
+            const displaySub = (displayMode === 'total') ? lapElapsed : elapsedTime;
+            document.getElementById('mainTimerValue').textContent = formatTime(displayMain > 0 ? displayMain : 0);
+            document.getElementById('subTimerValue').textContent = formatTime(displaySub > 0 ? displaySub : 0);
         }
 
         function formatTime(s) {
@@ -1023,11 +1018,12 @@
         }
 
         function updateAverages() {
-            if (sessionData.count > 0) {
-                document.getElementById('avgRpmValue').innerText = Math.round(sessionData.rpmSum / sessionData.count);
-                document.getElementById('avgPowerValue').innerText = Math.round(sessionData.powerSum / sessionData.count);
+            const src = (displayMode === 'lap') ? lapData : sessionData;
+            if (src.count > 0) {
+                document.getElementById('avgRpmValue').innerText = Math.round(src.rpmSum / src.count);
+                document.getElementById('avgPowerValue').innerText = Math.round(src.powerSum / src.count);
             }
-            if (sessionData.hrCount > 0) document.getElementById('avgHrValue').innerText = Math.round(sessionData.hrSum / sessionData.hrCount);
+            if (src.hrCount > 0) document.getElementById('avgHrValue').innerText = Math.round(src.hrSum / src.hrCount);
         }
 
         function renderHistory() {
@@ -1050,7 +1046,6 @@
         function playAudioCue(t) { if (!audioCtx) return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); g.gain.setValueAtTime(0.05, audioCtx.currentTime); o.start(); o.stop(audioCtx.currentTime + 0.1); }
         function toggleVoiceControl() { if (prefs.voiceEnabled) startVoiceListening(); else stopVoiceListening(); }
         function toggleView() { setView(currentViewMode === 'desktop' ? 'mobile' : 'desktop'); }
-        function toggleDurationMode() { /* Display swap logic */ }
         function resetAvgDisplay() { document.getElementById('avgRpmValue').innerText = '--'; document.getElementById('avgPowerValue').innerText = '--'; document.getElementById('avgHrValue').innerText = '--'; }
 
     </script>
