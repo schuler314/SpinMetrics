@@ -142,11 +142,11 @@
     </nav>
 
     <!-- Voice Help Modal -->
-    <dialog id="voiceHelpModal" class="bg-slate-900 text-white rounded-3xl shadow-2xl p-0 border border-slate-700 w-full max-xl:max-w-xl overflow-hidden">
+    <dialog id="voiceHelpModal" class="bg-slate-900 text-white rounded-3xl shadow-2xl p-0 border border-slate-700 w-full max-xl:max-w-2xl overflow-hidden">
         <div class="bg-slate-800 p-8 flex justify-between items-center border-b border-slate-700">
             <h3 class="text-3xl font-black flex items-center gap-4">
-                <div class="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-900/40">
-                    <i class="fa-solid fa-microphone-lines text-white"></i>
+                <div class="bg-blue-600 p-3 rounded-xl shadow-lg shadow-blue-900/40">
+                    <i class="fa-solid fa-microphone-lines text-white text-2xl"></i>
                 </div>
                 Voice Control Guide
             </h3>
@@ -160,63 +160,63 @@
         <div class="p-10 space-y-12 bg-gradient-to-b from-slate-900 to-slate-950 overflow-y-auto max-h-[80vh]">
             <!-- Wake Words -->
             <section>
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="bg-emerald-500 text-slate-900 text-base font-black rounded-full w-10 h-10 flex items-center justify-center shrink-0">1</div>
-                    <h4 class="text-xl font-black text-emerald-400 uppercase tracking-widest">Wake Up Phrases</h4>
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="bg-emerald-500 text-slate-900 text-xl font-black rounded-full w-12 h-12 flex items-center justify-center shrink-0">1</div>
+                    <h4 class="text-2xl font-black text-emerald-400 uppercase tracking-widest">Wake Up Phrases</h4>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div class="bg-slate-800 p-6 rounded-2xl border-2 border-slate-700 text-center shadow-lg">
-                        <span class="text-slate-500 text-xs block uppercase font-bold mb-2">Preferred</span>
-                        <span class="text-2xl font-bold text-white italic">"Hey SpinMetrics"</span>
+                    <div class="bg-slate-800 p-8 rounded-2xl border-2 border-slate-700 text-center shadow-lg">
+                        <span class="text-slate-500 text-sm block uppercase font-bold mb-3">Preferred</span>
+                        <span class="text-3xl font-bold text-white italic">"Hey SpinMetrics"</span>
                     </div>
-                    <div class="bg-slate-800 p-6 rounded-2xl border-2 border-emerald-500/30 text-center shadow-lg">
-                        <span class="text-emerald-500 text-xs block uppercase font-bold mb-2">Alternative</span>
-                        <span class="text-2xl font-bold text-emerald-400 italic">"Hey Metrics"</span>
+                    <div class="bg-slate-800 p-8 rounded-2xl border-2 border-emerald-500/30 text-center shadow-lg">
+                        <span class="text-emerald-500 text-sm block uppercase font-bold mb-3">High Sensitivity</span>
+                        <span class="text-3xl font-bold text-emerald-400 italic">"Hey Metrics"</span>
                     </div>
-                    <div class="bg-slate-800 p-6 rounded-2xl border-2 border-slate-700 text-center shadow-lg">
-                        <span class="text-slate-500 text-xs block uppercase font-bold mb-2">Short</span>
-                        <span class="text-2xl font-bold text-white italic">"Hey Spin"</span>
+                    <div class="bg-slate-800 p-8 rounded-2xl border-2 border-slate-700 text-center shadow-lg">
+                        <span class="text-slate-500 text-sm block uppercase font-bold mb-3">Short</span>
+                        <span class="text-3xl font-bold text-white italic">"Hey Spin"</span>
                     </div>
                 </div>
-                <p class="text-slate-300 text-base mt-6 leading-relaxed">Wait for the microphone to turn <span class="text-rose-500 font-bold">RED</span> before speaking your action, or say them together (e.g. "Hey SpinMetrics Start").</p>
+                <p class="text-slate-300 text-xl mt-8 leading-relaxed">Wait for the microphone to turn <span class="text-rose-500 font-bold underline decoration-rose-500/30 underline-offset-8">RED</span> before speaking your action.</p>
             </section>
 
             <!-- Actions -->
             <section>
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="bg-blue-500 text-slate-900 text-base font-black rounded-full w-10 h-10 flex items-center justify-center shrink-0">2</div>
-                    <h4 class="text-xl font-black text-blue-400 uppercase tracking-widest">Command Actions</h4>
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="bg-blue-500 text-slate-900 text-xl font-black rounded-full w-12 h-12 flex items-center justify-center shrink-0">2</div>
+                    <h4 class="text-2xl font-black text-blue-400 uppercase tracking-widest">Command Actions</h4>
                 </div>
                 <div class="space-y-6">
-                    <div class="flex items-center justify-between bg-slate-800/40 p-6 rounded-2xl border border-slate-700 group">
-                        <span class="text-emerald-400 font-black text-xl">START</span>
-                        <span class="text-slate-200 font-mono font-bold text-lg">Start, Ride, Go, Begin</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-8 rounded-2xl border border-slate-700 group hover:bg-slate-800/60 transition-all">
+                        <span class="text-emerald-400 font-black text-2xl tracking-tight">START SESSION</span>
+                        <span class="text-slate-200 font-mono font-bold text-xl bg-slate-900 px-4 py-2 rounded-lg">Start, Go, Ride</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-6 rounded-2xl border border-slate-700 group">
-                        <span class="text-rose-400 font-black text-xl">STOP</span>
-                        <span class="text-slate-200 font-mono font-bold text-lg">Stop, End, Done, Finish</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-8 rounded-2xl border border-slate-700 group hover:bg-slate-800/60 transition-all">
+                        <span class="text-rose-400 font-black text-2xl tracking-tight">STOP SESSION</span>
+                        <span class="text-slate-200 font-mono font-bold text-xl bg-slate-900 px-4 py-2 rounded-lg">Stop, End, Done</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-6 rounded-2xl border border-slate-700 group">
-                        <span class="text-amber-400 font-black text-xl">PAUSE</span>
-                        <span class="text-slate-200 font-mono font-bold text-lg">Pause, Resume, Hold</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-8 rounded-2xl border border-slate-700 group hover:bg-slate-800/60 transition-all">
+                        <span class="text-amber-400 font-black text-2xl tracking-tight">PAUSE / RESUME</span>
+                        <span class="text-slate-200 font-mono font-bold text-xl bg-slate-900 px-4 py-2 rounded-lg">Pause, Resume</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-6 rounded-2xl border border-slate-700 group">
-                        <span class="text-blue-400 font-black text-xl">LAP</span>
-                        <span class="text-slate-200 font-mono font-bold text-lg">Lap, Next, Mark, Split</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-8 rounded-2xl border border-slate-700 group hover:bg-slate-800/60 transition-all">
+                        <span class="text-blue-400 font-black text-2xl tracking-tight">RECORD LAP</span>
+                        <span class="text-slate-200 font-mono font-bold text-xl bg-slate-900 px-4 py-2 rounded-lg">Lap, Next, Mark</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-6 rounded-2xl border border-slate-700 group">
-                        <span class="text-purple-400 font-black text-xl">SWITCH</span>
-                        <span class="text-slate-200 font-mono font-bold text-lg">Switch, Duration, Swap</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-8 rounded-2xl border border-slate-700 group hover:bg-slate-800/60 transition-all">
+                        <span class="text-purple-400 font-black text-2xl tracking-tight">SWITCH TIMER</span>
+                        <span class="text-slate-200 font-mono font-bold text-xl bg-slate-900 px-4 py-2 rounded-lg">Switch, Duration</span>
                     </div>
                 </div>
             </section>
 
             <!-- Bottom Note -->
-            <div class="bg-blue-600/10 border border-blue-500/20 p-6 rounded-2xl flex gap-6">
-                <i class="fa-solid fa-lightbulb text-blue-400 text-2xl shrink-0"></i>
+            <div class="bg-blue-600/10 border-2 border-blue-500/20 p-8 rounded-3xl flex gap-8">
+                <i class="fa-solid fa-lightbulb text-blue-400 text-4xl shrink-0 mt-1"></i>
                 <div>
-                    <h5 class="text-blue-400 font-bold text-base mb-2">Combine for speed</h5>
-                    <p class="text-blue-100/80 text-sm leading-relaxed">You don't have to wait between phrases. Try saying <span class="text-white font-bold underline decoration-blue-500">"Hey SpinMetrics Switch"</span> in one go for immediate response.</p>
+                    <h5 class="text-blue-400 font-black text-xl mb-3">Pro Tip: No Waiting Required</h5>
+                    <p class="text-blue-100/80 text-lg leading-relaxed italic">"Hey SpinMetrics Switch" — Say it all at once. The system is tuned for speed and will process the combined phrase immediately.</p>
                 </div>
             </div>
         </div>
@@ -486,7 +486,7 @@
             
             <div class="h-8 md:hidden"></div>
         </div>
-    </main>
+    </nav>
 
     <script>
         // --- CONSTANTS ---
@@ -605,7 +605,7 @@
         // --- SPEECH API ---
         function initVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!speciesRecognition) {
+            if (!SpeechRecognition) {
                 log("Voice API Not Supported.");
                 return;
             }
@@ -631,6 +631,7 @@
             };
 
             recognition.onresult = (event) => {
+                // Restoration of the working buffer-based logic
                 let fullBuffer = '';
                 for (let i = 0; i < event.results.length; ++i) {
                     fullBuffer += event.results[i][0].transcript;
@@ -638,6 +639,7 @@
                 const cmd = fullBuffer.trim().toLowerCase();
                 if (!cmd) return;
 
+                // Wake words
                 const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike', 'hey metrics', 'hey metric', 'hey spin matrix'];
                 const matchedWake = wakeWords.some(w => cmd.includes(w));
 
@@ -683,36 +685,32 @@
             const now = Date.now();
             if (now - lastCommandProcessedTime < 2000) return; 
 
-            let commandExecuted = false;
+            let commandFound = null;
 
-            if (triggers.switch.some(t => cmd.includes(t))) {
-                log("Voice: SWITCH");
-                toggleDurationMode();
-                commandExecuted = true;
-            } else if (triggers.start.some(t => cmd.includes(t)) && !document.getElementById('startBtn').disabled) {
-                log("Voice: START");
-                startSession();
-                commandExecuted = true;
-            } else if (triggers.stop.some(t => cmd.includes(t)) && !document.getElementById('stopBtn').disabled) {
-                log("Voice: STOP");
-                stopSession();
-                commandExecuted = true;
-            } else if (triggers.pause.some(t => cmd.includes(t)) && !document.getElementById('pauseBtn').disabled) {
-                log("Voice: PAUSE/RESUME");
-                togglePause();
-                commandExecuted = true;
-            } else if (triggers.lap.some(t => cmd.includes(t)) && !document.getElementById('lapBtn').disabled) {
-                log("Voice: LAP");
-                recordLap();
-                commandExecuted = true;
-            }
+            // CHECK ALL TRIGGERS INDEPENDENTLY
+            // This prevents an old "start" in the buffer from blocking a new "lap"
+            if (triggers.switch.some(t => cmd.includes(t))) commandFound = 'switch';
+            else if (triggers.lap.some(t => cmd.includes(t))) commandFound = 'lap';
+            else if (triggers.pause.some(t => cmd.includes(t))) commandFound = 'pause';
+            else if (triggers.stop.some(t => cmd.includes(t))) commandFound = 'stop';
+            else if (triggers.start.some(t => cmd.includes(t))) commandFound = 'start';
 
-            if (commandExecuted) {
-                lastCommandProcessedTime = now;
-                isListeningForCommand = false;
-                try { recognition.stop(); } catch(e){}
-                const vs = document.getElementById('voiceStatus');
-                if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+            if (commandFound) {
+                let executed = false;
+                if (commandFound === 'switch') { log("Voice: SWITCH"); toggleDurationMode(); executed = true; }
+                if (commandFound === 'start' && !document.getElementById('startBtn').disabled) { log("Voice: START"); startSession(); executed = true; }
+                if (commandFound === 'stop' && !document.getElementById('stopBtn').disabled) { log("Voice: STOP"); stopSession(); executed = true; }
+                if (commandFound === 'pause' && !document.getElementById('pauseBtn').disabled) { log("Voice: PAUSE/RESUME"); togglePause(); executed = true; }
+                if (commandFound === 'lap' && !document.getElementById('lapBtn').disabled) { log("Voice: LAP"); recordLap(); executed = true; }
+
+                if (executed) {
+                    lastCommandProcessedTime = now;
+                    isListeningForCommand = false;
+                    // FLUSH BUFFER: Essential to reset after every command
+                    try { recognition.stop(); } catch(e){}
+                    const vs = document.getElementById('voiceStatus');
+                    if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+                }
             }
         }
 
@@ -954,7 +952,7 @@
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
-            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
+            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono text-blue-400">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono text-yellow-400">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono text-rose-400">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
             lapNumber++;
             lapOffsetSeconds = elapsedTime; 
@@ -1007,7 +1005,8 @@
 
         function updateTimers() {
             if (!startTime) return;
-            elapsedTime = Math.floor(((Date.now() - startTime) - totalPausedTime) / 1000);
+            const now = isPaused ? pauseStartTime : Date.now();
+            elapsedTime = Math.floor(((now - startTime) - totalPausedTime) / 1000);
             const lapElapsed = Math.max(0, elapsedTime - lapOffsetSeconds);
             document.getElementById('mainTimerValue').textContent = formatTime(displayMode === 'total' ? elapsedTime : lapElapsed);
             document.getElementById('subTimerValue').textContent = formatTime(displayMode === 'total' ? lapElapsed : elapsedTime);
@@ -1038,16 +1037,16 @@
 
         function renderHistory() {
             const l = document.getElementById('historyList');
-            l.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 py-10 italic">No history recorded yet.</div>';
+            l.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 py-10 italic text-sm">No history recorded yet.</div>';
             history.forEach(s => {
                 const d = document.createElement('div');
-                d.className = "bg-slate-800 p-3 rounded-lg border border-slate-700 text-sm relative group mb-3";
+                d.className = "bg-slate-800 p-4 rounded-xl border border-slate-700 text-sm relative group mb-3 shadow-md";
                 d.innerHTML = `
-                    <button onclick="deleteHistoryItem(${s.id})" class="absolute top-2 right-2 text-slate-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition p-1" title="Delete record">
-                        <i class="fa-solid fa-trash-can"></i>
+                    <button onclick="deleteHistoryItem(${s.id})" class="absolute top-3 right-3 text-slate-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition p-1" title="Delete record">
+                        <i class="fa-solid fa-trash-can text-base"></i>
                     </button>
-                    <div class="flex justify-between mb-1 pr-6"><span class="text-slate-400 text-xs">${s.date}</span><span class="font-bold text-emerald-400">${s.duration}</span></div>
-                    <div class="grid grid-cols-3 gap-1 font-mono text-xs"><div class="text-blue-400">R:${s.avgRpm}</div><div class="text-yellow-400">W:${s.avgPower}</div><div class="text-rose-400">H:${s.avgHr}</div></div>`;
+                    <div class="flex justify-between mb-2 pr-8"><span class="text-slate-400 font-bold text-xs">${s.date}</span><span class="font-bold text-emerald-400 text-base">${s.duration}</span></div>
+                    <div class="grid grid-cols-3 gap-2 font-mono text-xs"><div class="bg-slate-900/40 p-2 rounded text-center text-blue-400">R:${s.avgRpm}</div><div class="bg-slate-900/40 p-2 rounded text-center text-yellow-400">W:${s.avgPower}</div><div class="bg-slate-900/40 p-2 rounded text-center text-rose-400">H:${s.avgHr}</div></div>`;
                 l.appendChild(d);
             });
         }
