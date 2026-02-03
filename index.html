@@ -254,7 +254,7 @@
 
                 <!-- Session Controls Group -->
                 <div class="flex gap-2">
-                    <button id="startBtn" disabled class="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+                    <button id="startBtn" class="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
                         <i class="fa-solid fa-play"></i> Start
                     </button>
                     
@@ -1113,7 +1113,6 @@
                         char.addEventListener('characteristicvaluechanged', handleBikeData);
                     }
                 }
-                document.getElementById('startBtn').disabled = false;
             } catch (error) { log('Bike Failed: ' + error); }
         }
 
