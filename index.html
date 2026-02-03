@@ -152,8 +152,7 @@
         
         <div class="space-y-6 text-sm">
             <div>
-                <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">1. Wake Word</h4>
-                <p class="text-slate-300 mb-2 italic">Say one of these to activate command mode (Mic turns red):</p>
+                <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">1. Wake Words</h4>
                 <div class="flex flex-wrap gap-2">
                     <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs text-emerald-400">"Hey SpinMetrics"</span>
                     <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs">"Hey Metrics"</span>
@@ -163,30 +162,20 @@
 
             <div class="grid grid-cols-1 gap-4 border-t border-slate-700 pt-4">
                 <div>
-                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Start Action</h4>
-                    <p class="text-slate-400 font-mono text-xs">"Start", "Begin", "Go", "Ride"</p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-bold text-rose-400 uppercase tracking-widest mb-2">Stop Action</h4>
-                    <p class="text-slate-400 font-mono text-xs">"Stop", "End", "Finish", "Done"</p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">Pause / Resume</h4>
-                    <p class="text-slate-400 font-mono text-xs">"Pause", "Resume", "Toggle", "Hold"</p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">Record Lap</h4>
-                    <p class="text-slate-400 font-mono text-xs">"Lap", "Next", "Flag", "Mark"</p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2">Switch View</h4>
-                    <p class="text-slate-400 font-mono text-xs">"Switch", "Duration", "Swap", "Change"</p>
+                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Actions</h4>
+                    <ul class="space-y-1 text-slate-300 font-mono text-xs">
+                        <li><span class="text-white">"Start"</span> (Go, Begin, Ride)</li>
+                        <li><span class="text-white">"Stop"</span> (End, Finish, Done)</li>
+                        <li><span class="text-white">"Pause"</span> (Resume, Wait, Hold)</li>
+                        <li><span class="text-white">"Lap"</span> (Next, Mark, Split)</li>
+                        <li><span class="text-white">"Switch"</span> (Change, Swap, Duration)</li>
+                    </ul>
                 </div>
             </div>
 
             <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
                 <p class="text-[11px] text-slate-500 leading-relaxed">
-                    <i class="fa-solid fa-circle-info mr-1"></i> Tip: Sensitivity is increased. Say <span class="text-slate-300">"Hey SpinMetrics Switch"</span> clearly. If it doesn't hear you, click the mic icon once.
+                    <i class="fa-solid fa-circle-info mr-1"></i> Improved sensitivity active. Say words clearly. System ignores commands for 2 seconds after each action to prevent double-triggering.
                 </p>
             </div>
         </div>
@@ -482,15 +471,14 @@
         let totalPausedTime = 0;
         let isPaused = false;
         
-        let sessionDurationAtLapStart = 0;
-        let lastLapTimestamp = null; 
+        let lapStartTime = null;
+        let lapOffsetSeconds = 0; 
         let lapNumber = 0;
         let displayMode = 'total'; 
 
         let sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
         let lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
         let history = [];
-        let currentSessionLaps = [];
         let elapsedTime = 0;
         
         // --- PREFERENCES ---
@@ -574,7 +562,7 @@
             document.addEventListener('click', enableVoiceOnInteraction);
         });
 
-        // --- SPEECH API OPTIMIZATION ---
+        // --- SPEECH API ---
         function initVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -590,10 +578,7 @@
 
             recognition.onstart = () => {
                 const vs = document.getElementById('voiceStatus');
-                if (vs) {
-                    vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
-                    vs.title = "Listening for 'Hey SpinMetrics'";
-                }
+                if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
                 log("Voice Active");
             };
 
@@ -607,14 +592,12 @@
 
             recognition.onresult = (event) => {
                 let fullBuffer = '';
-                // Gather full current transcript buffer to catch wake words properly
                 for (let i = 0; i < event.results.length; ++i) {
                     fullBuffer += event.results[i][0].transcript;
                 }
                 const cmd = fullBuffer.trim().toLowerCase();
                 if (!cmd) return;
 
-                // High Sensitivity Detection
                 const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike', 'hey metrics'];
                 const matchedWake = wakeWords.some(w => cmd.includes(w));
 
@@ -630,11 +613,7 @@
             
             recognition.onend = () => {
                 if (prefs.voiceEnabled) {
-                    setTimeout(() => { 
-                        if (prefs.voiceEnabled) {
-                            try { recognition.start(); } catch(e){} 
-                        }
-                    }, 300);
+                    setTimeout(() => { if (prefs.voiceEnabled) try { recognition.start(); } catch(e){} }, 300);
                 }
             };
         }
@@ -658,12 +637,11 @@
                 stop: ['stop', 'end', 'finish', 'done'],
                 pause: ['pause', 'resume', 'toggle', 'hold'],
                 lap: ['lap', 'next', 'flag', 'mark'],
-                switch: ['switch', 'duration', 'swap', 'change', 'toggle duration']
+                switch: ['switch', 'duration', 'swap', 'change']
             };
 
-            // Throttle commands to prevent rapid-fire triggers (e.g., duplicate laps)
             const now = Date.now();
-            if (now - lastCommandProcessedTime < 1500) return;
+            if (now - lastCommandProcessedTime < 2000) return; // Prevent double trigger
 
             let commandExecuted = false;
 
@@ -692,20 +670,15 @@
             if (commandExecuted) {
                 lastCommandProcessedTime = now;
                 isListeningForCommand = false;
-                // Important: Reset buffer by stopping recognition
+                // Force engine clear to prevent transcript repetition
                 try { recognition.stop(); } catch(e){}
                 const vs = document.getElementById('voiceStatus');
                 if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
             }
         }
 
-        function startVoiceListening() {
-            if (recognition) { try { recognition.start(); } catch(e){} }
-        }
-
-        function stopVoiceListening() {
-            if (recognition) { try { recognition.stop(); } catch(e){} }
-        }
+        function startVoiceListening() { if (recognition) try { recognition.start(); } catch(e){} }
+        function stopVoiceListening() { if (recognition) try { recognition.stop(); } catch(e){} }
 
         // --- UI LOGIC ---
         function toggleDurationMode() {
@@ -714,17 +687,11 @@
                 document.getElementById('mainTimerLabel').innerHTML = `Current Lap <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
                 document.getElementById('subTimerLabel').innerText = "Total Duration";
                 document.getElementById('mainTimerLabel').classList.replace('text-slate-400', 'text-amber-400');
-                document.getElementById('lblAvgRpm').innerText = "Lap RPM";
-                document.getElementById('lblAvgHr').innerText = "Lap HR";
-                document.getElementById('lblAvgPower').innerText = "Lap Watts";
             } else {
                 displayMode = 'total';
                 document.getElementById('mainTimerLabel').innerHTML = `Total Duration <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
                 document.getElementById('subTimerLabel').innerText = "Current Lap";
                 document.getElementById('mainTimerLabel').classList.replace('text-amber-400', 'text-slate-400');
-                document.getElementById('lblAvgRpm').innerText = "Avg RPM";
-                document.getElementById('lblAvgHr').innerText = "Avg HR";
-                document.getElementById('lblAvgPower').innerText = "Avg Watts";
             }
             updateTimers();
             updateAverages();
@@ -749,26 +716,15 @@
                 if (hr >= max) fillPct = 100;
                 else if (hr > min) fillPct = ((hr - min) / (max - min)) * 100;
                 fill.style.height = `${fillPct}%`;
-                if (currentZone === zIdx) {
-                    bar.style.flex = '1.8';
-                    bar.classList.add('border-slate-400');
-                    bar.classList.remove('opacity-30');
-                } else {
-                    bar.style.flex = '1';
-                    bar.classList.remove('border-slate-400');
-                    bar.classList.add('opacity-30');
-                }
+                if (currentZone === zIdx) { bar.style.flex = '1.8'; bar.classList.add('border-slate-400'); bar.classList.remove('opacity-30'); } 
+                else { bar.style.flex = '1'; bar.classList.remove('border-slate-400'); bar.classList.add('opacity-30'); }
             });
         }
 
         function getZoneLimits() {
             const age = prefs.age;
             let maxHr = (prefs.hrMethod === 'tanaka') ? (208 - (0.7 * age)) : (220 - age);
-            return [
-                Math.round(maxHr * 0.5), Math.round(maxHr * 0.6),
-                Math.round(maxHr * 0.7), Math.round(maxHr * 0.8),
-                Math.round(maxHr * 0.9), Math.round(maxHr)
-            ];
+            return [Math.round(maxHr * 0.5), Math.round(maxHr * 0.6), Math.round(maxHr * 0.7), Math.round(maxHr * 0.8), Math.round(maxHr * 0.9), Math.round(maxHr)];
         }
 
         function setView(mode) {
@@ -789,31 +745,9 @@
                 grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all";
                 btm.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] w-full mx-auto transition-all";
                 document.querySelectorAll('.stat-card span.text-4xl').forEach(el => {
-                    if (el.id === 'mainTimerValue' || el.id === 'hrValue' || el.id === 'powerValue' || el.id === 'rpmValue') {
-                        el.classList.replace('text-4xl', 'text-6xl');
-                    }
+                    if (['mainTimerValue', 'hrValue', 'powerValue', 'rpmValue'].includes(el.id)) el.classList.replace('text-4xl', 'text-6xl');
                 });
             }
-        }
-
-        function downloadHistory() {
-            if (history.length === 0) {
-                log("No session history recorded yet.");
-                return;
-            }
-            let csv = "Date,Duration,Avg RPM,Avg Power,Avg HR\n";
-            history.forEach(s => {
-                csv += `"${s.date}",${s.duration},${s.avgRpm},${s.avgPower},${s.avgHr}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SpinMetrics_History_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
 
         // --- BLUETOOTH & SENSORS ---
@@ -824,9 +758,6 @@
                 const server = await bikeDevice.gatt.connect();
                 document.getElementById('bikeDot').className = "w-2 h-2 rounded-full bg-emerald-500";
                 log('Bike Connected');
-                const btn = document.getElementById('connectBtn');
-                btn.className = "flex-1 group flex items-center justify-center gap-2 bg-slate-800 text-emerald-400 font-semibold py-4 px-4 rounded-xl border border-emerald-500/30";
-                btn.innerHTML = '<i class="fa-solid fa-link"></i><span>Bike Active</span>';
                 setupBattery(server, 'bike');
                 const service = await server.getPrimaryService(BIKE_UUID);
                 const characteristics = await service.getCharacteristics();
@@ -846,9 +777,6 @@
                 const server = await hrDevice.gatt.connect();
                 document.getElementById('hrDot').className = "w-2 h-2 rounded-full bg-emerald-500";
                 log('HR Connected');
-                const btn = document.getElementById('connectHrBtn');
-                btn.className = "flex-1 group flex items-center justify-center gap-2 bg-slate-800 text-emerald-400 font-semibold py-4 px-4 rounded-xl border border-emerald-500/30";
-                btn.innerHTML = '<i class="fa-solid fa-link"></i><span>HR Active</span>';
                 setupBattery(server, 'hr');
                 const service = await server.getPrimaryService(HR_SERVICE_UUID);
                 const char = await service.getCharacteristic(HR_CHAR_UUID);
@@ -870,8 +798,7 @@
             document.getElementById('powerBar').style.width = `${Math.min((watts/500)*100, 100)}%`;
             if (prefs.targetRpmEnabled) {
                 const rc = document.getElementById('rpmCard');
-                if (Math.abs(rpm - prefs.targetRpmValue) <= 3) rc.classList.add('on-target');
-                else rc.classList.remove('on-target');
+                if (Math.abs(rpm - prefs.targetRpmValue) <= 3) rc.classList.add('on-target'); else rc.classList.remove('on-target');
             }
             if (timerInterval && !isPaused) {
                 sessionData.rpmSum += rpm; sessionData.powerSum += watts; sessionData.count++;
@@ -903,13 +830,9 @@
                 const s = await server.getPrimaryService(BATTERY_SERVICE_UUID);
                 const c = await s.getCharacteristic(BATTERY_LEVEL_CHAR_UUID);
                 const v = await c.readValue();
-                updateBattUI(type, v.getUint8(0));
+                const el = document.getElementById(type + 'Batt');
+                if (el) { el.innerText = `${v.getUint8(0)}%`; el.classList.remove('hidden'); }
             } catch(e) {}
-        }
-
-        function updateBattUI(type, level) {
-            const el = document.getElementById(type + 'Batt');
-            if (el) { el.innerText = `${level}%`; el.classList.remove('hidden'); }
         }
 
         // --- SESSION LOGIC ---
@@ -922,10 +845,8 @@
                 lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
                 lapNumber = 1;
                 document.getElementById('lapsTableBody').innerHTML = ''; 
-                currentSessionLaps = [];
                 startTime = Date.now();
-                sessionDurationAtLapStart = 0;
-                lastLapTimestamp = Date.now();
+                lapOffsetSeconds = 0; 
                 totalPausedTime = 0;
                 elapsedTime = 0;
             } 
@@ -962,13 +883,12 @@
             isPaused = false;
             releaseWakeLock();
             
-            // Auto-final lap logic: Check if a significant amount of time has passed since the last lap record
-            if (lapNumber > 0 && (elapsedTime - sessionDurationAtLapStart > 5)) {
-                recordLap();
-            }
-            
             if (startTime) {
+                // Check if final lap is worth recording
+                if (elapsedTime - lapOffsetSeconds > 2) recordLap();
+                
                 history.unshift({
+                    id: Date.now(),
                     date: new Date().toLocaleString(),
                     duration: formatTime(elapsedTime),
                     avgRpm: sessionData.count ? Math.round(sessionData.rpmSum / sessionData.count) : 0,
@@ -987,39 +907,31 @@
             startTime = null; 
             document.getElementById('timerDot').className = "w-2 h-2 rounded-full bg-slate-600";
             document.getElementById('timerState').innerText = "Stopped";
-            elapsedTime = 0;
-            sessionDurationAtLapStart = 0;
-            totalPausedTime = 0;
         }
 
         function recordLap() {
             if (!startTime) return;
-            // Robust lap duration calculation
-            const currentDur = Math.max(0, elapsedTime - sessionDurationAtLapStart);
+            const currentDur = Math.max(0, elapsedTime - lapOffsetSeconds);
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
-            
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
             row.innerHTML = `<td class="px-4 py-3">${lapNumber}</td><td class="px-4 py-3 font-bold">${formatTime(currentDur)}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3">${avgHr}</td><td class="px-4 py-3 text-xs">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
-            
             lapNumber++;
-            sessionDurationAtLapStart = elapsedTime; 
-            lastLapTimestamp = Date.now(); 
+            lapOffsetSeconds = elapsedTime; 
             lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
             log('Lap Recorded');
         }
 
+        // --- PREFERENCES & UTILS ---
         function saveSettings() {
             prefs.age = parseInt(document.getElementById('settingAge').value) || 40;
             prefs.hrMethod = document.getElementById('settingHrMethod').value;
             prefs.restingHr = parseInt(document.getElementById('settingRhr').value) || 60;
             prefs.audioEnabled = document.getElementById('settingAudio').checked;
             prefs.voiceEnabled = document.getElementById('settingVoice').checked;
-            prefs.targetRpmEnabled = document.getElementById('settingTargetRpmEnabled').checked;
-            prefs.targetRpmValue = parseInt(document.getElementById('settingTargetRpmValue').value) || 90;
             localStorage.setItem('spinMetrics_prefs', JSON.stringify(prefs));
-            toggleTargetInput();
+            toggleRhrInput();
         }
 
         function loadSettings() {
@@ -1030,10 +942,20 @@
             document.getElementById('settingRhr').value = prefs.restingHr;
             document.getElementById('settingAudio').checked = prefs.audioEnabled;
             document.getElementById('settingVoice').checked = prefs.voiceEnabled;
-            document.getElementById('settingTargetRpmEnabled').checked = prefs.targetRpmEnabled;
-            document.getElementById('settingTargetRpmValue').value = prefs.targetRpmValue;
             const h = localStorage.getItem('spinMetrics_history');
             if (h) { history = JSON.parse(h); renderHistory(); }
+            toggleRhrInput();
+        }
+
+        function deleteHistoryItem(id) {
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem('spinMetrics_history', JSON.stringify(history));
+            renderHistory();
+            log('History Item Deleted');
+        }
+
+        function clearHistory() {
+            if(confirm("Delete all history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); }
         }
 
         function calculateHrZone(hr) {
@@ -1048,21 +970,15 @@
 
         function updateTimers() {
             if (!startTime) return;
-            const now = Date.now();
-            elapsedTime = Math.floor(((now - startTime) - totalPausedTime) / 1000);
-            const lapElapsed = Math.max(0, elapsedTime - sessionDurationAtLapStart);
-            
-            const displayMain = (displayMode === 'total') ? elapsedTime : lapElapsed;
-            const displaySub = (displayMode === 'total') ? lapElapsed : elapsedTime;
-            
-            document.getElementById('mainTimerValue').textContent = formatTime(displayMain);
-            document.getElementById('subTimerValue').textContent = formatTime(displaySub);
+            elapsedTime = Math.floor(((Date.now() - startTime) - totalPausedTime) / 1000);
+            const lapElapsed = Math.max(0, elapsedTime - lapOffsetSeconds);
+            document.getElementById('mainTimerValue').textContent = formatTime(displayMode === 'total' ? elapsedTime : lapElapsed);
+            document.getElementById('subTimerValue').textContent = formatTime(displayMode === 'total' ? lapElapsed : elapsedTime);
         }
 
         function formatTime(s) {
-            if (s < 0) s = 0;
-            const min = Math.floor(s/60).toString().padStart(2, '0');
-            const sec = (s%60).toString().padStart(2, '0');
+            const min = Math.floor(Math.max(0, s)/60).toString().padStart(2, '0');
+            const sec = Math.floor(Math.max(0, s)%60).toString().padStart(2, '0');
             return `${min}:${sec}`;
         }
 
@@ -1085,13 +1001,28 @@
 
         function renderHistory() {
             const l = document.getElementById('historyList');
-            l.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 py-10">No history</div>';
-            history.slice(0, 10).forEach(s => {
+            l.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 py-10 italic">No history recorded yet.</div>';
+            history.forEach(s => {
                 const d = document.createElement('div');
-                d.className = "bg-slate-800 p-3 rounded-lg border border-slate-700 text-sm";
-                d.innerHTML = `<div class="flex justify-between mb-1"><span class="text-slate-400">${s.date}</span><span class="font-bold">${s.duration}</span></div><div class="grid grid-cols-3 gap-1 font-mono"><div class="text-blue-400">R:${s.avgRpm}</div><div class="text-yellow-400">W:${s.avgPower}</div><div class="text-rose-400">H:${s.avgHr}</div></div>`;
+                d.className = "bg-slate-800 p-3 rounded-lg border border-slate-700 text-sm relative group";
+                d.innerHTML = `
+                    <button onclick="deleteHistoryItem(${s.id})" class="absolute top-2 right-2 text-slate-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition p-1" title="Delete record">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <div class="flex justify-between mb-1 pr-6"><span class="text-slate-400 text-xs">${s.date}</span><span class="font-bold text-emerald-400">${s.duration}</span></div>
+                    <div class="grid grid-cols-3 gap-1 font-mono text-xs"><div class="text-blue-400">R:${s.avgRpm}</div><div class="text-yellow-400">W:${s.avgPower}</div><div class="text-rose-400">H:${s.avgHr}</div></div>`;
                 l.appendChild(d);
             });
+        }
+
+        function downloadHistory() {
+            if (history.length === 0) { log("History is empty."); return; }
+            let csv = "Date,Duration,Avg RPM,Avg Power,Avg HR\n";
+            history.forEach(s => csv += `"${s.date}",${s.duration},${s.avgRpm},${s.avgPower},${s.avgHr}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `History_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
+            a.click(); URL.revokeObjectURL(url);
         }
 
         async function requestWakeLock() { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
@@ -1103,7 +1034,6 @@
         function playAudioCue(t) { if (!audioCtx) return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); g.gain.setValueAtTime(0.05, audioCtx.currentTime); o.start(); o.stop(audioCtx.currentTime + 0.1); }
         function toggleVoiceControl() { if (prefs.voiceEnabled) startVoiceListening(); else stopVoiceListening(); }
         function toggleView() { setView(currentViewMode === 'desktop' ? 'mobile' : 'desktop'); }
-        function resetAvgDisplay() { document.getElementById('avgRpmValue').innerText = '--'; document.getElementById('avgPowerValue').innerText = '--'; document.getElementById('avgHrValue').innerText = '--'; }
 
     </script>
 </body>
