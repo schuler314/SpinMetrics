@@ -83,8 +83,8 @@
         
         /* Modal Backdrop */
         dialog::backdrop {
-            background-color: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(2px);
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
@@ -102,7 +102,7 @@
 
         <div class="flex items-center gap-3 md:gap-4">
             <!-- Voice Indicator Group -->
-            <div class="flex items-center gap-1 bg-slate-900/50 p-1 rounded-full border border-slate-800">
+            <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-full border border-slate-800">
                 <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset)">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
@@ -142,43 +142,70 @@
     </nav>
 
     <!-- Voice Help Modal -->
-    <dialog id="voiceHelpModal" class="bg-slate-800 text-white rounded-xl shadow-2xl p-6 border border-slate-600 w-full max-w-md">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-microphone-lines mr-2 text-blue-400"></i> Voice Commands</h3>
+    <dialog id="voiceHelpModal" class="bg-slate-900 text-white rounded-3xl shadow-2xl p-0 border border-slate-700 w-full max-w-xl overflow-hidden">
+        <div class="bg-slate-800 p-8 flex justify-between items-center border-b border-slate-700">
+            <h3 class="text-2xl font-black flex items-center gap-4">
+                <div class="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-900/40">
+                    <i class="fa-solid fa-microphone-lines text-white"></i>
+                </div>
+                Voice Control
+            </h3>
             <form method="dialog">
-                <button class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-full transition-all active:scale-95">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </form>
         </div>
         
-        <div class="space-y-6 text-sm">
-            <div>
-                <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">1. Wake Words</h4>
-                <p class="text-slate-400 text-xs mb-2">Say one of these to activate (Mic turns red):</p>
-                <div class="flex flex-wrap gap-2">
-                    <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs text-emerald-400">"Hey SpinMetrics"</span>
-                    <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs">"Hey Metrics"</span>
-                    <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs">"Hey Spin"</span>
+        <div class="p-10 space-y-10 bg-gradient-to-b from-slate-900 to-slate-950">
+            <!-- Part 1: Wake -->
+            <section>
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="bg-emerald-500 text-slate-900 text-sm font-black rounded-full w-8 h-8 flex items-center justify-center shrink-0">1</div>
+                    <h4 class="text-lg font-black text-emerald-400 uppercase tracking-widest">Wake Up</h4>
                 </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4 border-t border-slate-700 pt-4">
-                <div>
-                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Actions</h4>
-                    <ul class="space-y-2 text-slate-300 font-mono text-xs">
-                        <li><span class="text-white bg-slate-900 px-1 rounded">"Start"</span> (Go, Begin, Ride)</li>
-                        <li><span class="text-white bg-slate-900 px-1 rounded">"Stop"</span> (End, Finish, Done)</li>
-                        <li><span class="text-white bg-slate-900 px-1 rounded">"Pause"</span> (Wait, Hold, Resume)</li>
-                        <li><span class="text-white bg-slate-900 px-1 rounded">"Lap"</span> (Next, Mark, Flag)</li>
-                        <li><span class="text-white bg-slate-900 px-1 rounded">"Switch"</span> (Change, Swap, Duration)</li>
-                    </ul>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-slate-800 p-5 rounded-2xl border-2 border-slate-700 text-center shadow-lg">
+                        <span class="text-slate-500 text-[10px] block uppercase font-bold mb-1">Standard</span>
+                        <span class="text-xl font-bold text-white italic">"Hey SpinMetrics"</span>
+                    </div>
+                    <div class="bg-slate-800 p-5 rounded-2xl border-2 border-emerald-500/30 text-center shadow-lg">
+                        <span class="text-emerald-500 text-[10px] block uppercase font-bold mb-1">High Sensitivity</span>
+                        <span class="text-xl font-bold text-emerald-400 italic">"Hey Metrics"</span>
+                    </div>
                 </div>
-            </div>
+                <p class="text-slate-500 text-sm mt-4 leading-relaxed">Wait for the microphone to turn <span class="text-rose-500 font-bold">RED</span> before speaking your action, or say them together.</p>
+            </section>
 
-            <div class="bg-blue-900/20 p-3 rounded-lg border border-blue-800/50">
-                <p class="text-[11px] text-blue-300 leading-relaxed">
-                    <i class="fa-solid fa-bolt mr-1"></i> <strong>Pro Tip:</strong> Accuracy is boosted. For best results at 3ft distance, speak slightly louder than conversational volume.
-                </p>
-            </div>
+            <!-- Part 2: Actions -->
+            <section>
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="bg-blue-500 text-slate-900 text-sm font-black rounded-full w-8 h-8 flex items-center justify-center shrink-0">2</div>
+                    <h4 class="text-lg font-black text-blue-400 uppercase tracking-widest">Commands</h4>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-slate-800/40 p-5 rounded-2xl border border-slate-800 group hover:border-emerald-500/50 transition-colors">
+                        <span class="text-emerald-400 font-black text-lg">START</span>
+                        <span class="text-slate-300 font-mono font-bold">Start, Ride, Go</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-5 rounded-2xl border border-slate-800 group hover:border-rose-500/50 transition-colors">
+                        <span class="text-rose-400 font-black text-lg">STOP</span>
+                        <span class="text-slate-300 font-mono font-bold">Stop, End, Done</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-5 rounded-2xl border border-slate-800 group hover:border-amber-500/50 transition-colors">
+                        <span class="text-amber-400 font-black text-lg">PAUSE</span>
+                        <span class="text-slate-300 font-mono font-bold">Pause, Resume, Wait</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-5 rounded-2xl border border-slate-800 group hover:border-blue-500/50 transition-colors">
+                        <span class="text-blue-400 font-black text-lg">LAP</span>
+                        <span class="text-slate-300 font-mono font-bold">Lap, Next, Mark</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-5 rounded-2xl border border-slate-800 group hover:border-purple-500/50 transition-colors">
+                        <span class="text-purple-400 font-black text-lg">SWITCH</span>
+                        <span class="text-slate-300 font-mono font-bold">Switch, Swap</span>
+                    </div>
+                </div>
+            </section>
         </div>
     </dialog>
 
@@ -446,7 +473,7 @@
             
             <div class="h-8 md:hidden"></div>
         </div>
-    </main>
+    </nav>
 
     <script>
         // --- CONSTANTS ---
@@ -472,8 +499,7 @@
         let totalPausedTime = 0;
         let isPaused = false;
         
-        let sessionDurationAtLapStart = 0;
-        let lastLapTimestamp = null; 
+        let lapOffsetSeconds = 0; 
         let lapNumber = 0;
         let displayMode = 'total'; 
 
@@ -523,7 +549,7 @@
                     if(recognition) {
                         try { recognition.stop(); } catch(err){}
                         isListeningForCommand = false;
-                        setTimeout(() => startVoiceListening(), 50);
+                        setTimeout(() => startVoiceListening(), 100);
                     } else {
                         initVoiceRecognition();
                         startVoiceListening();
@@ -563,7 +589,7 @@
             document.addEventListener('click', enableVoiceOnInteraction);
         });
 
-        // --- SPEECH API ---
+        // --- SPEECH API OPTIMIZATION ---
         function initVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -592,37 +618,33 @@
             };
 
             recognition.onresult = (event) => {
-                // SENSITIVITY BOOST: Process segments from the resultIndex only
-                let currentSegment = '';
+                // ACCURACY BOOST: Focus only on the results from event.resultIndex onward (new sound)
+                let latestText = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    currentSegment += event.results[i][0].transcript;
+                    latestText += event.results[i][0].transcript;
                 }
                 
-                // We also check the full buffer for the wake word to ensure context isn't lost
-                let fullBuffer = '';
-                for (let i = 0; i < event.results.length; ++i) {
-                    fullBuffer += event.results[i][0].transcript;
-                }
-                
-                const cmd = fullBuffer.trim().toLowerCase();
-                if (!cmd) return;
+                const segment = latestText.toLowerCase().trim();
+                if (!segment) return;
 
-                const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike', 'hey metrics', 'hey metric', 'hey spin matrix'];
-                const matchedWake = wakeWords.some(w => cmd.includes(w));
+                // SENSITIVITY BOOST: Simplified Wake Words (Better at 3ft)
+                const wakeTriggers = ['metrics', 'metric', 'spin', 'matrix', 'hey metrics', 'hey metric', 'hey spin'];
+                const foundWake = wakeTriggers.some(w => segment.includes(w));
 
-                if (matchedWake && !isListeningForCommand) {
-                    log("Wake Word Detected!");
+                if (foundWake && !isListeningForCommand) {
+                    log("Wake Detected");
                     activateCommandListening();
                 }
 
                 if (isListeningForCommand) {
-                    processCommand(cmd);
+                    processCommand(segment);
                 }
             };
             
             recognition.onend = () => {
                 if (prefs.voiceEnabled) {
-                    setTimeout(() => { if (prefs.voiceEnabled) try { recognition.start(); } catch(e){} }, 300);
+                    // Short delay before restart to keep it robust
+                    setTimeout(() => { if (prefs.voiceEnabled) try { recognition.start(); } catch(e){} }, 400);
                 }
             };
         }
@@ -650,40 +672,37 @@
             };
 
             const now = Date.now();
-            // Lockout period to prevent double-processing a single spoken word
-            if (now - lastCommandProcessedTime < 2000) return; 
+            // RE-TRIGGER FIX: Throttling ensures a single word isn't processed twice in a short burst
+            if (now - lastCommandProcessedTime < 1800) return; 
 
-            let commandExecuted = false;
+            let actionTaken = false;
 
             if (triggers.switch.some(t => cmd.includes(t))) {
                 log("Voice: SWITCH");
                 toggleDurationMode();
-                commandExecuted = true;
+                actionTaken = true;
             } else if (triggers.start.some(t => cmd.includes(t)) && !document.getElementById('startBtn').disabled) {
                 log("Voice: START");
                 startSession();
-                commandExecuted = true;
+                actionTaken = true;
             } else if (triggers.stop.some(t => cmd.includes(t)) && !document.getElementById('stopBtn').disabled) {
                 log("Voice: STOP");
                 stopSession();
-                commandExecuted = true;
+                actionTaken = true;
             } else if (triggers.pause.some(t => cmd.includes(t)) && !document.getElementById('pauseBtn').disabled) {
-                log("Voice: PAUSE/RESUME");
+                log("Voice: PAUSE");
                 togglePause();
-                commandExecuted = true;
+                actionTaken = true;
             } else if (triggers.lap.some(t => cmd.includes(t)) && !document.getElementById('lapBtn').disabled) {
                 log("Voice: LAP");
                 recordLap();
-                commandExecuted = true;
+                actionTaken = true;
             }
 
-            if (commandExecuted) {
+            if (actionTaken) {
                 lastCommandProcessedTime = now;
                 isListeningForCommand = false;
-                
-                // FLUSH BUFFER: Restart recognition to clear accumulated speech
-                try { recognition.stop(); } catch(e){}
-                
+                // HOT-MIC: We stay active but clear the internal state immediately
                 const vs = document.getElementById('voiceStatus');
                 if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
             }
@@ -712,50 +731,43 @@
         function updateHrZonesUI(hr) {
             const limits = getZoneLimits();
             const zones = [1, 2, 3, 4, 5];
-            let currentZone = 0;
-            if (hr >= limits[4]) currentZone = 5;
-            else if (hr >= limits[3]) currentZone = 4;
-            else if (hr >= limits[2]) currentZone = 3;
-            else if (hr >= limits[1]) currentZone = 2;
-            else if (hr >= limits[0]) currentZone = 1;
+            let cz = 0;
+            if (hr >= limits[4]) cz = 5; else if (hr >= limits[3]) cz = 4; else if (hr >= limits[2]) cz = 3; else if (hr >= limits[1]) cz = 2; else if (hr >= limits[0]) cz = 1;
 
-            zones.forEach(zIdx => {
-                const bar = document.getElementById(`barZ${zIdx}`);
-                const fill = document.getElementById(`fillZ${zIdx}`);
-                const min = zIdx === 1 ? limits[0] : limits[zIdx-2];
-                const max = limits[zIdx-1];
-                let fillPct = 0;
-                if (hr >= max) fillPct = 100;
-                else if (hr > min) fillPct = ((hr - min) / (max - min)) * 100;
-                fill.style.height = `${fillPct}%`;
-                if (currentZone === zIdx) { bar.style.flex = '1.8'; bar.classList.add('border-slate-400'); bar.classList.remove('opacity-30'); } 
-                else { bar.style.flex = '1'; bar.classList.remove('border-slate-400'); bar.classList.add('opacity-30'); }
+            zones.forEach(i => {
+                const b = document.getElementById(`barZ${i}`);
+                const f = document.getElementById(`fillZ${i}`);
+                const min = i === 1 ? limits[0] : limits[i-2];
+                const max = limits[i-1];
+                let p = 0;
+                if (hr >= max) p = 100; else if (hr > min) p = ((hr - min) / (max - min)) * 100;
+                f.style.height = `${p}%`;
+                if (cz === i) { b.style.flex = '1.8'; b.classList.add('border-slate-400'); b.classList.remove('opacity-30'); } 
+                else { b.style.flex = '1'; b.classList.remove('border-slate-400'); b.classList.add('opacity-30'); }
             });
         }
 
         function getZoneLimits() {
-            const age = prefs.age;
-            let maxHr = (prefs.hrMethod === 'tanaka') ? (208 - (0.7 * age)) : (220 - age);
-            return [Math.round(maxHr * 0.5), Math.round(maxHr * 0.6), Math.round(maxHr * 0.7), Math.round(maxHr * 0.8), Math.round(maxHr * 0.9), Math.round(maxHr)];
+            const a = prefs.age;
+            let m = (prefs.hrMethod === 'tanaka') ? (208 - (0.7 * a)) : (220 - a);
+            return [Math.round(m * 0.5), Math.round(m * 0.6), Math.round(m * 0.7), Math.round(m * 0.8), Math.round(m * 0.9), Math.round(m)];
         }
 
-        function setView(mode) {
-            currentViewMode = mode;
-            const viewText = document.getElementById('viewText');
-            const viewIcon = document.getElementById('viewIcon');
-            const grid = document.getElementById('dashboardGrid');
-            const btm = document.getElementById('bottomGrid');
-            if (mode === 'mobile') {
-                viewIcon.className = 'fa-solid fa-mobile-screen';
-                viewText.innerText = 'Mobile';
-                grid.className = "grid grid-cols-2 gap-2 max-w-[1400px] w-full mx-auto transition-all";
-                btm.className = "grid grid-cols-1 gap-4 max-w-[1400px] w-full mx-auto transition-all";
+        function setView(m) {
+            currentViewMode = m;
+            const t = document.getElementById('viewText');
+            const i = document.getElementById('viewIcon');
+            const g = document.getElementById('dashboardGrid');
+            const b = document.getElementById('bottomGrid');
+            if (m === 'mobile') {
+                i.className = 'fa-solid fa-mobile-screen'; t.innerText = 'Mobile';
+                g.className = "grid grid-cols-2 gap-2 max-w-[1400px] w-full mx-auto transition-all";
+                b.className = "grid grid-cols-1 gap-4 max-w-[1400px] w-full mx-auto transition-all";
                 document.querySelectorAll('.stat-card span.text-5xl, .stat-card span.text-6xl').forEach(el => el.classList.replace('text-6xl', 'text-4xl'));
             } else {
-                viewIcon.className = 'fa-solid fa-desktop';
-                viewText.innerText = 'Desktop';
-                grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all";
-                btm.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] w-full mx-auto transition-all";
+                i.className = 'fa-solid fa-desktop'; t.innerText = 'Desktop';
+                g.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all";
+                b.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] w-full mx-auto transition-all";
                 document.querySelectorAll('.stat-card span.text-4xl').forEach(el => {
                     if (['mainTimerValue', 'hrValue', 'powerValue', 'rpmValue'].includes(el.id)) el.classList.replace('text-4xl', 'text-6xl');
                 });
@@ -798,51 +810,37 @@
         }
 
         function handleBikeData(event) {
-            const data = event.target.value;
-            if (data.byteLength < 8 || data.getUint8(0) !== 0x81) return;
-            const rpm = data.getUint8(3);
-            const res = data.getUint8(6);
-            const watts = Math.round((rpm * res) / 10);
-            document.getElementById('rpmValue').textContent = rpm;
-            document.getElementById('rpmBar').style.width = `${Math.min((rpm/130)*100, 100)}%`;
+            const d = event.target.value;
+            if (d.byteLength < 8 || d.getUint8(0) !== 0x81) return;
+            const r = d.getUint8(3);
+            const res = d.getUint8(6);
+            const w = Math.round((r * res) / 10);
+            document.getElementById('rpmValue').textContent = r;
+            document.getElementById('rpmBar').style.width = `${Math.min((r/130)*100, 100)}%`;
             document.getElementById('resistanceValue').textContent = res;
-            document.getElementById('powerValue').textContent = watts;
-            document.getElementById('powerBar').style.width = `${Math.min((watts/500)*100, 100)}%`;
-            if (prefs.targetRpmEnabled) {
-                const rc = document.getElementById('rpmCard');
-                if (Math.abs(rpm - prefs.targetRpmValue) <= 3) rc.classList.add('on-target'); else rc.classList.remove('on-target');
-            }
-            if (timerInterval && !isPaused) {
-                sessionData.rpmSum += rpm; sessionData.powerSum += watts; sessionData.count++;
-                lapData.rpmSum += rpm; lapData.powerSum += watts; lapData.count++;
-                updateAverages();
-            }
+            document.getElementById('powerValue').textContent = w;
+            document.getElementById('powerBar').style.width = `${Math.min((w/500)*100, 100)}%`;
+            if (timerInterval && !isPaused) { sessionData.rpmSum += r; sessionData.powerSum += w; sessionData.count++; lapData.rpmSum += r; lapData.powerSum += w; lapData.count++; updateAverages(); }
         }
 
         function handleHeartRateData(event) {
-            const val = event.target.value;
-            const flags = val.getUint8(0);
-            let hr = (flags & 0x01) === 0 ? val.getUint8(1) : val.getUint16(1, true); 
+            const v = event.target.value;
+            const f = v.getUint8(0);
+            let hr = (f & 0x01) === 0 ? v.getUint8(1) : v.getUint16(1, true); 
             document.getElementById('hrValue').textContent = hr;
             const z = calculateHrZone(hr);
             document.getElementById('hrZoneDisplay').textContent = z.label;
             document.getElementById('hrZoneDisplay').className = `text-2xl font-bold ${z.colorClass} mt-1`;
             updateHrZonesUI(hr);
-            if (z.zone > previousHrZone && prefs.audioEnabled) playAudioCue('zoneUp');
-            previousHrZone = z.zone;
-            if (timerInterval && !isPaused) {
-                sessionData.hrSum += hr; sessionData.hrCount++;
-                lapData.hrSum += hr; lapData.hrCount++;
-                updateAverages();
-            }
+            if (timerInterval && !isPaused) { sessionData.hrSum += hr; sessionData.hrCount++; lapData.hrSum += hr; lapData.hrCount++; updateAverages(); }
         }
 
-        async function setupBattery(server, type) {
+        async function setupBattery(s, t) {
             try {
-                const s = await server.getPrimaryService(BATTERY_SERVICE_UUID);
-                const c = await s.getCharacteristic(BATTERY_LEVEL_CHAR_UUID);
-                const v = await c.readValue();
-                const el = document.getElementById(type + 'Batt');
+                const sv = await s.getPrimaryService(BATTERY_SERVICE_UUID);
+                const ch = await sv.getCharacteristic(BATTERY_LEVEL_CHAR_UUID);
+                const v = await ch.readValue();
+                const el = document.getElementById(t + 'Batt');
                 if (el) { el.innerText = `${v.getUint8(0)}%`; el.classList.remove('hidden'); }
             } catch(e) {}
         }
@@ -894,11 +892,8 @@
             timerInterval = null;
             isPaused = false;
             releaseWakeLock();
-            
             if (startTime) {
-                // Auto-record final lap if data exists
                 if (elapsedTime - lapOffsetSeconds > 2) recordLap();
-                
                 history.unshift({
                     id: Date.now(),
                     date: new Date().toLocaleString(),
@@ -911,7 +906,6 @@
                 renderHistory();
                 log('Session Saved');
             }
-            
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
             document.getElementById('lapBtn').disabled = true;
@@ -923,12 +917,11 @@
 
         function recordLap() {
             if (!startTime) return;
-            // ROBUST CALCULATION: Delta of absolute session time
             const currentDur = Math.max(0, elapsedTime - lapOffsetSeconds);
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
-            row.innerHTML = `<td class="px-4 py-3">${lapNumber}</td><td class="px-4 py-3 font-bold">${formatTime(currentDur)}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3">${avgHr}</td><td class="px-4 py-3 text-xs">${calculateHrZone(avgHr).label}</td>`;
+            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
             lapNumber++;
             lapOffsetSeconds = elapsedTime; 
@@ -964,12 +957,10 @@
             history = history.filter(item => item.id !== id);
             localStorage.setItem('spinMetrics_history', JSON.stringify(history));
             renderHistory();
-            log('History Item Deleted');
+            log('Item Deleted');
         }
 
-        function clearHistory() {
-            if(confirm("Delete all history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); }
-        }
+        function clearHistory() { if(confirm("Delete history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
 
         function calculateHrZone(hr) {
             const limits = getZoneLimits();
@@ -983,18 +974,16 @@
 
         function updateTimers() {
             if (!startTime) return;
-            const now = Date.now();
-            elapsedTime = Math.floor(((now - startTime) - totalPausedTime) / 1000);
+            elapsedTime = Math.floor(((Date.now() - startTime) - totalPausedTime) / 1000);
             const lapElapsed = Math.max(0, elapsedTime - lapOffsetSeconds);
             document.getElementById('mainTimerValue').textContent = formatTime(displayMode === 'total' ? elapsedTime : lapElapsed);
             document.getElementById('subTimerValue').textContent = formatTime(displayMode === 'total' ? lapElapsed : elapsedTime);
         }
 
         function formatTime(s) {
-            if (s < 0) s = 0;
-            const min = Math.floor(s/60).toString().padStart(2, '0');
-            const sec = Math.floor(s%60).toString().padStart(2, '0');
-            return `${min}:${sec}`;
+            const m = Math.floor(Math.max(0, s)/60).toString().padStart(2, '0');
+            const sc = Math.floor(Math.max(0, s)%60).toString().padStart(2, '0');
+            return `${m}:${sc}`;
         }
 
         function log(m) {
@@ -1016,22 +1005,22 @@
 
         function renderHistory() {
             const l = document.getElementById('historyList');
-            l.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 py-10 italic">No history recorded yet.</div>';
+            l.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 py-10 italic">No sessions saved.</div>';
             history.forEach(s => {
                 const d = document.createElement('div');
-                d.className = "bg-slate-800 p-3 rounded-lg border border-slate-700 text-sm relative group";
+                d.className = "bg-slate-800 p-4 rounded-2xl border border-slate-700 text-sm relative group mb-3";
                 d.innerHTML = `
-                    <button onclick="deleteHistoryItem(${s.id})" class="absolute top-2 right-2 text-slate-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition p-1" title="Delete record">
+                    <button onclick="deleteHistoryItem(${s.id})" class="absolute top-2 right-2 text-slate-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition p-2" title="Delete record">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
-                    <div class="flex justify-between mb-1 pr-6"><span class="text-slate-400 text-xs">${s.date}</span><span class="font-bold text-emerald-400">${s.duration}</span></div>
-                    <div class="grid grid-cols-3 gap-1 font-mono text-xs"><div class="text-blue-400">R:${s.avgRpm}</div><div class="text-yellow-400">W:${s.avgPower}</div><div class="text-rose-400">H:${s.avgHr}</div></div>`;
+                    <div class="flex justify-between mb-2 pr-6"><span class="text-slate-400 font-bold">${s.date}</span><span class="font-black text-emerald-400">${s.duration}</span></div>
+                    <div class="grid grid-cols-3 gap-2 font-mono text-xs"><div class="bg-slate-900/50 p-1.5 rounded text-center text-blue-400">R:${s.avgRpm}</div><div class="bg-slate-900/50 p-1.5 rounded text-center text-yellow-400">W:${s.avgPower}</div><div class="bg-slate-900/50 p-1.5 rounded text-center text-rose-400">H:${s.avgHr}</div></div>`;
                 l.appendChild(d);
             });
         }
 
         function downloadHistory() {
-            if (history.length === 0) { log("History is empty."); return; }
+            if (!history.length) { log("No history data."); return; }
             let csv = "Date,Duration,Avg RPM,Avg Power,Avg HR\n";
             history.forEach(s => csv += `"${s.date}",${s.duration},${s.avgRpm},${s.avgPower},${s.avgHr}\n`);
             const blob = new Blob([csv], { type: 'text/csv' });
