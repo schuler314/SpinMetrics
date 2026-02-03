@@ -153,6 +153,7 @@
         <div class="space-y-6 text-sm">
             <div>
                 <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">1. Wake Words</h4>
+                <p class="text-slate-400 text-xs mb-2">Say one of these to activate (Mic turns red):</p>
                 <div class="flex flex-wrap gap-2">
                     <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs text-emerald-400">"Hey SpinMetrics"</span>
                     <span class="bg-slate-900 px-2 py-1 rounded border border-slate-700 font-mono text-xs">"Hey Metrics"</span>
@@ -163,19 +164,19 @@
             <div class="grid grid-cols-1 gap-4 border-t border-slate-700 pt-4">
                 <div>
                     <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Actions</h4>
-                    <ul class="space-y-1 text-slate-300 font-mono text-xs">
-                        <li><span class="text-white">"Start"</span> (Go, Begin, Ride)</li>
-                        <li><span class="text-white">"Stop"</span> (End, Finish, Done)</li>
-                        <li><span class="text-white">"Pause"</span> (Resume, Wait, Hold)</li>
-                        <li><span class="text-white">"Lap"</span> (Next, Mark, Split)</li>
-                        <li><span class="text-white">"Switch"</span> (Change, Swap, Duration)</li>
+                    <ul class="space-y-2 text-slate-300 font-mono text-xs">
+                        <li><span class="text-white bg-slate-900 px-1 rounded">"Start"</span> (Go, Begin, Ride)</li>
+                        <li><span class="text-white bg-slate-900 px-1 rounded">"Stop"</span> (End, Finish, Done)</li>
+                        <li><span class="text-white bg-slate-900 px-1 rounded">"Pause"</span> (Wait, Hold, Resume)</li>
+                        <li><span class="text-white bg-slate-900 px-1 rounded">"Lap"</span> (Next, Mark, Flag)</li>
+                        <li><span class="text-white bg-slate-900 px-1 rounded">"Switch"</span> (Change, Swap, Duration)</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                <p class="text-[11px] text-slate-500 leading-relaxed">
-                    <i class="fa-solid fa-circle-info mr-1"></i> Improved sensitivity active. Say words clearly. System ignores commands for 2 seconds after each action to prevent double-triggering.
+            <div class="bg-blue-900/20 p-3 rounded-lg border border-blue-800/50">
+                <p class="text-[11px] text-blue-300 leading-relaxed">
+                    <i class="fa-solid fa-bolt mr-1"></i> <strong>Pro Tip:</strong> Accuracy is boosted. For best results at 3ft distance, speak slightly louder than conversational volume.
                 </p>
             </div>
         </div>
@@ -471,8 +472,8 @@
         let totalPausedTime = 0;
         let isPaused = false;
         
-        let lapStartTime = null;
-        let lapOffsetSeconds = 0; 
+        let sessionDurationAtLapStart = 0;
+        let lastLapTimestamp = null; 
         let lapNumber = 0;
         let displayMode = 'total'; 
 
@@ -591,14 +592,22 @@
             };
 
             recognition.onresult = (event) => {
+                // SENSITIVITY BOOST: Process segments from the resultIndex only
+                let currentSegment = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    currentSegment += event.results[i][0].transcript;
+                }
+                
+                // We also check the full buffer for the wake word to ensure context isn't lost
                 let fullBuffer = '';
                 for (let i = 0; i < event.results.length; ++i) {
                     fullBuffer += event.results[i][0].transcript;
                 }
+                
                 const cmd = fullBuffer.trim().toLowerCase();
                 if (!cmd) return;
 
-                const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike', 'hey metrics'];
+                const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike', 'hey metrics', 'hey metric', 'hey spin matrix'];
                 const matchedWake = wakeWords.some(w => cmd.includes(w));
 
                 if (matchedWake && !isListeningForCommand) {
@@ -635,13 +644,14 @@
             const triggers = {
                 start: ['start', 'begin', 'go', 'ride'],
                 stop: ['stop', 'end', 'finish', 'done'],
-                pause: ['pause', 'resume', 'toggle', 'hold'],
+                pause: ['pause', 'resume', 'wait', 'hold'],
                 lap: ['lap', 'next', 'flag', 'mark'],
                 switch: ['switch', 'duration', 'swap', 'change']
             };
 
             const now = Date.now();
-            if (now - lastCommandProcessedTime < 2000) return; // Prevent double trigger
+            // Lockout period to prevent double-processing a single spoken word
+            if (now - lastCommandProcessedTime < 2000) return; 
 
             let commandExecuted = false;
 
@@ -670,8 +680,10 @@
             if (commandExecuted) {
                 lastCommandProcessedTime = now;
                 isListeningForCommand = false;
-                // Force engine clear to prevent transcript repetition
+                
+                // FLUSH BUFFER: Restart recognition to clear accumulated speech
                 try { recognition.stop(); } catch(e){}
+                
                 const vs = document.getElementById('voiceStatus');
                 if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
             }
@@ -884,7 +896,7 @@
             releaseWakeLock();
             
             if (startTime) {
-                // Check if final lap is worth recording
+                // Auto-record final lap if data exists
                 if (elapsedTime - lapOffsetSeconds > 2) recordLap();
                 
                 history.unshift({
@@ -911,6 +923,7 @@
 
         function recordLap() {
             if (!startTime) return;
+            // ROBUST CALCULATION: Delta of absolute session time
             const currentDur = Math.max(0, elapsedTime - lapOffsetSeconds);
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
             const row = document.createElement('tr');
@@ -970,15 +983,17 @@
 
         function updateTimers() {
             if (!startTime) return;
-            elapsedTime = Math.floor(((Date.now() - startTime) - totalPausedTime) / 1000);
+            const now = Date.now();
+            elapsedTime = Math.floor(((now - startTime) - totalPausedTime) / 1000);
             const lapElapsed = Math.max(0, elapsedTime - lapOffsetSeconds);
             document.getElementById('mainTimerValue').textContent = formatTime(displayMode === 'total' ? elapsedTime : lapElapsed);
             document.getElementById('subTimerValue').textContent = formatTime(displayMode === 'total' ? lapElapsed : elapsedTime);
         }
 
         function formatTime(s) {
-            const min = Math.floor(Math.max(0, s)/60).toString().padStart(2, '0');
-            const sec = Math.floor(Math.max(0, s)%60).toString().padStart(2, '0');
+            if (s < 0) s = 0;
+            const min = Math.floor(s/60).toString().padStart(2, '0');
+            const sec = Math.floor(s%60).toString().padStart(2, '0');
             return `${min}:${sec}`;
         }
 
