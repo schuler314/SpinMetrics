@@ -499,13 +499,16 @@
             // Voice Reset icon
             const vs = document.getElementById('voiceStatus');
             if(vs) {
-                vs.onclick = () => {
+                vs.onclick = (e) => {
                     log("Manual Voice Reset");
+                    // Force start immediately on click to ensure user gesture is captured
                     if(recognition) {
-                        try { recognition.stop(); } catch(e){}
-                        setTimeout(() => startVoiceListening(), 200);
+                        try { recognition.stop(); } catch(err){}
+                        // Re-start will happen in the 'onend' or via direct call
+                        setTimeout(() => startVoiceListening(), 10);
                     } else {
                         initVoiceRecognition();
+                        startVoiceListening();
                     }
                 };
             }
@@ -573,17 +576,18 @@
                     prefs.voiceEnabled = false;
                     saveSettings();
                 } else if (event.error !== 'no-speech') {
-                    log("Voice Error: " + event.error);
+                    // log("Voice Error: " + event.error);
                 }
             };
 
             recognition.onresult = (event) => {
-                let currentTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    currentTranscript += event.results[i][0].transcript;
+                let fullTranscript = '';
+                // Gather full current transcript buffer to catch wake words properly
+                for (let i = 0; i < event.results.length; ++i) {
+                    fullTranscript += event.results[i][0].transcript;
                 }
                 
-                const cmd = currentTranscript.trim().toLowerCase();
+                const cmd = fullTranscript.trim().toLowerCase();
                 if(!cmd) return;
 
                 // Reactive Wake Word Logic (Reduced Latency)
@@ -603,7 +607,12 @@
             
             recognition.onend = () => {
                 if (prefs.voiceEnabled) {
-                    setTimeout(() => { try { recognition.start(); } catch(e){} }, 300);
+                    // Short delay to avoid loops, but keep it alive
+                    setTimeout(() => { 
+                        if (prefs.voiceEnabled) {
+                            try { recognition.start(); } catch(e){} 
+                        }
+                    }, 400);
                 }
             };
         }
@@ -623,10 +632,10 @@
 
         function processCommand(cmd) {
             const triggers = {
-                start: ['start', 'begin', 'go'],
-                stop: ['stop', 'end', 'finish'],
-                pause: ['pause', 'resume', 'toggle'],
-                lap: ['lap', 'next', 'split', 'flag']
+                start: ['start', 'begin', 'go', 'ride'],
+                stop: ['stop', 'end', 'finish', 'done'],
+                pause: ['pause', 'resume', 'toggle', 'wait', 'hold'],
+                lap: ['lap', 'next', 'split', 'flag', 'mark']
             };
 
             if (triggers.start.some(t => cmd.includes(t)) && !document.getElementById('startBtn').disabled) {
@@ -645,6 +654,20 @@
                 log("Voice: LAP");
                 recordLap();
                 isListeningForCommand = false;
+            }
+        }
+
+        function startVoiceListening() {
+            if (recognition) { 
+                try { recognition.start(); } catch(e){ 
+                    // recognition already started
+                } 
+            }
+        }
+
+        function stopVoiceListening() {
+            if (recognition) {
+                try { recognition.stop(); } catch(e){}
             }
         }
 
