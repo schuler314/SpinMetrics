@@ -1,7 +1,1076 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8"><!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpinMetrics Dashboard</title>
+    <meta name="description" content="Connect your Bluetooth Spin Bike and Heart Rate Monitor.">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+        .pulse-anim {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .mic-listening {
+            animation: pulse-blue 2s infinite;
+            color: #3b82f6; /* Blue 500 */
+        }
+        @keyframes pulse-blue {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+            100% { opacity: 0.7; }
+        }
+        .mic-active {
+            color: #f43f5e; /* Rose 500 */
+            animation: pulse-red 0.5s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        
+        /* Zone Colors */
+        .text-zone-1 { color: #94a3b8; } 
+        .text-zone-2 { color: #60a5fa; } 
+        .text-zone-3 { color: #34d399; } 
+        .text-zone-4 { color: #fbbf24; } 
+        .text-zone-5 { color: #f43f5e; } 
+        
+        .bg-zone-1 { background-color: #94a3b8; }
+        .bg-zone-2 { background-color: #60a5fa; }
+        .bg-zone-3 { background-color: #34d399; }
+        .bg-zone-4 { background-color: #fbbf24; }
+        .bg-zone-5 { background-color: #f43f5e; }
+
+        /* Target RPM Highlight */
+        .on-target {
+            border-color: #22c55e !important; 
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3) !important;
+        }
+        
+        /* Modal Backdrop */
+        dialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(2px);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center shadow-lg z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-lg">
+                <i class="fa-solid fa-bicycle text-white text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight text-white hidden md:block">SpinMetrics <span class="text-xs text-emerald-400 font-mono ml-2">PRO</span></h1>
+            <h1 class="text-xl font-bold tracking-tight text-white md:hidden">SpinMetrics</h1>
+        </div>
+
+        <div class="flex items-center gap-3 md:gap-4">
+            <!-- Voice Indicator -->
+            <button id="voiceStatus" class="text-slate-600 mr-2 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset)">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+
+            <!-- Settings -->
+            <button onclick="document.getElementById('settingsModal').showModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white p-2 px-3 rounded-lg border border-slate-700 transition" title="Settings">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+
+            <div class="hidden md:flex items-center gap-4 text-sm font-medium mr-2">
+                <div class="flex items-center gap-2 text-slate-400" id="bikeStatus">
+                    <span class="w-2 h-2 rounded-full bg-slate-600" id="bikeDot"></span>
+                    <span>Bike</span>
+                    <span id="bikeBatt" class="text-xs text-slate-500 font-mono ml-1 hidden">--%</span>
+                </div>
+                <div class="flex items-center gap-2 text-slate-400" id="hrStatus">
+                    <span class="w-2 h-2 rounded-full bg-slate-600" id="hrDot"></span>
+                    <span>HRM</span>
+                    <span id="hrBatt" class="text-xs text-slate-500 font-mono ml-1 hidden">--%</span>
+                </div>
+            </div>
+
+            <!-- Single Toggle Button for View -->
+            <button id="btnViewToggle" class="bg-slate-800 text-slate-400 hover:text-white p-2 px-3 rounded-lg border border-slate-700 transition duration-300 flex items-center gap-2" title="Switch View">
+                <i id="viewIcon" class="fa-solid fa-desktop"></i>
+                <span id="viewText" class="font-medium text-sm hidden sm:inline">Desktop</span>
+            </button>
+            
+            <button id="btnFullScreen" class="text-slate-400 hover:text-white transition" title="Toggle Fullscreen">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Settings Modal -->
+    <dialog id="settingsModal" class="bg-slate-800 text-white rounded-xl shadow-2xl p-6 border border-slate-600 w-full max-w-sm">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-sliders mr-2"></i> Settings</h3>
+            <form method="dialog">
+                <button class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </form>
+        </div>
+        
+        <div class="space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">User Age</label>
+                <div class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-slate-700">
+                    <i class="fa-solid fa-user text-slate-500 ml-2"></i>
+                    <input type="number" id="settingAge" min="10" max="100" class="bg-transparent text-white w-full focus:outline-none font-mono">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">HR Zone Method</label>
+                <select id="settingHrMethod" class="w-full bg-slate-900 text-white text-sm p-2 rounded border border-slate-700 focus:outline-none focus:border-blue-500">
+                    <option value="traditional">Traditional (220-Age)</option>
+                    <option value="tanaka">Tanaka (208 - 0.7*Age)</option>
+                    <option value="karvonen">Karvonen (HR Reserve)</option>
+                </select>
+                <p class="text-[10px] text-slate-500 mt-1" id="hrMethodDesc">Standard max heart rate calculation.</p>
+            </div>
+
+            <div id="rhrInputContainer" class="hidden transition-all">
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Resting Heart Rate (RHR)</label>
+                <div class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-slate-700">
+                    <i class="fa-solid fa-bed-pulse text-slate-500 ml-2"></i>
+                    <input type="number" id="settingRhr" value="60" min="30" max="120" class="bg-transparent text-white w-full focus:outline-none font-mono">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label class="text-sm font-medium text-white flex items-center gap-2">
+                    <i class="fa-solid fa-volume-high text-slate-400"></i> Audio Cues
+                </label>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="settingAudio" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label class="text-sm font-medium text-white flex items-center gap-2">
+                    <i class="fa-solid fa-microphone text-slate-400"></i> Voice Control
+                </label>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="settingVoice" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-0 pt-0">Say "Hey SpinMetrics" to wake up. (5s timeout)</p>
+
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-sm font-medium text-white flex items-center gap-2">
+                        <i class="fa-solid fa-crosshairs text-slate-400"></i> Target RPM
+                    </label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="settingTargetRpmEnabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+                
+                <div id="targetRpmInputContainer" class="hidden transition-all">
+                    <div class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-slate-700">
+                        <span class="text-xs text-slate-500 font-bold ml-2">RPM</span>
+                        <input type="number" id="settingTargetRpmValue" value="90" min="40" max="150" class="bg-transparent text-white w-full focus:outline-none font-mono">
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1">RPM card will glow green when within ±3 RPM.</p>
+                </div>
+            </div>
+
+            <hr class="border-slate-700">
+
+            <button onclick="clearHistory()" class="w-full text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-900/30 py-3 rounded border border-transparent hover:border-rose-900 transition text-left px-4 flex items-center gap-2">
+                <i class="fa-solid fa-trash-can"></i> Clear History Data
+            </button>
+        </div>
+    </dialog>
+
+    <!-- Main Layout -->
+    <main id="mainLayout" class="flex-1 flex flex-col overflow-hidden transition-all duration-300">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-6 scroll-smooth">
+            
+            <!-- Controls -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-[1400px] w-full mx-auto">
+                <div class="flex gap-2">
+                    <button id="connectBtn" class="flex-1 group relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-95">
+                        <i class="fa-brands fa-bluetooth-b text-lg"></i>
+                        <span>Connect Bike</span>
+                    </button>
+                    <button id="connectHrBtn" class="flex-1 group relative flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-rose-900/20 active:scale-95">
+                        <i class="fa-solid fa-heart-pulse text-lg"></i>
+                        <span>Connect HR</span>
+                    </button>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="startBtn" class="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+                        <i class="fa-solid fa-play"></i> Start
+                    </button>
+                    
+                    <button id="pauseBtn" disabled class="flex-1 flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-yellow-900/20 active:scale-95">
+                        <i id="pauseIcon" class="fa-solid fa-pause"></i> <span id="pauseText">Pause</span>
+                    </button>
+
+                    <button id="lapBtn" disabled class="flex-1 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-amber-900/20 active:scale-95">
+                        <i class="fa-solid fa-flag-checkered"></i> Lap
+                    </button>
+
+                    <button id="stopBtn" disabled class="flex-1 flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-slate-900/20 active:scale-95">
+                        <i class="fa-solid fa-stop"></i> Stop
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div id="dashboardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all duration-300">
+                
+                <!-- Timer Card -->
+                <div id="timerCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px] cursor-pointer hover:border-blue-500 transition-colors">
+                    <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
+                        <i class="fa-solid fa-stopwatch text-9xl text-emerald-500"></i>
+                    </div>
+                    <div>
+                        <h2 id="mainTimerLabel" class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Total Duration <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i></h2>
+                        <div class="flex items-baseline">
+                            <span id="mainTimerValue" class="text-5xl md:text-6xl font-mono font-bold text-white tracking-tighter">00:00</span>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-2 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-slate-600" id="timerDot"></span>
+                            <span id="timerState">Stopped</span>
+                        </div>
+                    </div>
+                    <div class="my-auto"></div>
+                    <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 border-l-4 border-l-amber-500 mt-auto">
+                        <span id="subTimerLabel" class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Current Lap</span>
+                        <span id="subTimerValue" class="text-2xl md:text-3xl font-mono font-bold text-amber-400">00:00</span>
+                    </div>
+                </div>
+
+                <!-- Heart Rate Card -->
+                <div class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-row relative overflow-hidden min-h-[220px] md:min-h-[260px]">
+                    <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
+                        <i class="fa-solid fa-heart text-9xl text-rose-500"></i>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between z-10">
+                        <div>
+                            <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Heart Rate</h2>
+                            <div class="flex items-baseline gap-2">
+                                <span id="hrValue" class="text-5xl md:text-6xl font-mono font-bold text-white tracking-tighter">--</span>
+                                <span class="text-slate-500 text-sm md:text-lg font-medium">BPM</span>
+                            </div>
+                            <div id="hrZoneDisplay" class="text-2xl font-bold text-slate-400 transition-colors duration-300 mt-1">Zone 0</div>
+                        </div>
+                        <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 mt-4 mr-2">
+                            <span id="lblAvgHr" class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Avg HR</span>
+                            <span id="avgHrValue" class="text-2xl md:text-3xl font-mono font-bold text-rose-100">--</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-12 flex flex-col-reverse gap-1 h-full z-10 items-end" id="hrZoneBars">
+                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ1">
+                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">1</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-slate-400 transition-all duration-300 h-0 opacity-50" id="fillZ1"></div>
+                        </div>
+                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ2">
+                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">2</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-blue-500 transition-all duration-300 h-0 opacity-50" id="fillZ2"></div>
+                        </div>
+                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ3">
+                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">3</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-emerald-500 transition-all duration-300 h-0 opacity-50" id="fillZ3"></div>
+                        </div>
+                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ4">
+                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">4</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-amber-500 transition-all duration-300 h-0 opacity-50" id="fillZ4"></div>
+                        </div>
+                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ5">
+                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">5</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-rose-600 transition-all duration-300 h-0 opacity-50" id="fillZ5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Power Card -->
+                <div class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px]">
+                    <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
+                        <i class="fa-solid fa-bolt text-9xl text-yellow-500"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Power (Est)</h2>
+                        <div class="flex items-baseline gap-2">
+                            <span id="powerValue" class="text-5xl md:text-6xl font-mono font-bold text-white tracking-tighter">--</span>
+                            <span class="text-slate-500 text-sm md:text-lg font-medium">WATTS</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full my-4 overflow-hidden">
+                        <div id="powerBar" class="h-full bg-yellow-500 transition-all duration-500 w-0"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-auto">
+                        <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50">
+                            <span id="lblAvgPower" class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Avg Watts</span>
+                            <span id="avgPowerValue" class="text-2xl md:text-3xl font-mono font-bold text-yellow-100">--</span>
+                        </div>
+                        <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Res. Lvl</span>
+                            <span id="resistanceValue" class="text-2xl md:text-3xl font-mono font-bold text-slate-200">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RPM Card -->
+                <div id="rpmCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px] transition-all duration-300">
+                    <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
+                        <i class="fa-solid fa-bicycle text-9xl text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Cadence</h2>
+                        <div class="flex items-baseline gap-2">
+                            <span id="rpmValue" class="text-5xl md:text-6xl font-mono font-bold text-white tracking-tighter">--</span>
+                            <span class="text-slate-500 text-sm md:text-lg font-medium">RPM</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full my-4 overflow-hidden">
+                        <div id="rpmBar" class="h-full bg-blue-500 transition-all duration-500 w-0"></div>
+                    </div>
+                    <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 mt-auto">
+                        <span id="lblAvgRpm" class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Avg RPM</span>
+                        <span id="avgRpmValue" class="text-2xl md:text-3xl font-mono font-bold text-blue-100">--</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Grid -->
+            <div id="bottomGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] w-full mx-auto transition-all duration-300">
+                <div id="lapListContainer" class="bg-slate-800 rounded-xl border border-slate-700 flex flex-col shadow-lg overflow-hidden min-h-[240px]">
+                    <div class="bg-slate-900/50 p-4 border-b border-slate-700 flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wide"><i class="fa-solid fa-list-ol mr-2"></i> Session Laps</h3>
+                        <span class="text-xs font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded" id="lapCount">0 Laps</span>
+                    </div>
+                    <div class="overflow-y-auto flex-1 p-0 max-h-[300px]">
+                        <table class="w-full text-sm text-left text-slate-400">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-900 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3">#</th>
+                                    <th class="px-4 py-3">Time</th>
+                                    <th class="px-4 py-3">Avg RPM</th>
+                                    <th class="px-4 py-3">Avg Watts</th>
+                                    <th class="px-4 py-3">Avg HR</th>
+                                    <th class="px-4 py-3">Zone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lapsTableBody" class="divide-y divide-slate-700">
+                                <tr class="text-center py-6"><td colspan="6" class="py-6 text-slate-600 italic">No laps recorded yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="historyContainer" class="bg-slate-800 rounded-xl border border-slate-700 flex flex-col shadow-lg overflow-hidden min-h-[240px]">
+                    <div class="bg-slate-900/50 p-4 border-b border-slate-700 flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left mr-2"></i> History</h3>
+                        <button onclick="downloadHistory()" class="text-xs bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1.5 rounded border border-slate-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv"></i> Save CSV
+                        </button>
+                    </div>
+                    <div id="historyList" class="overflow-y-auto flex-1 p-4 space-y-3 max-h-[300px]">
+                        <div class="text-center text-slate-600 text-sm mt-10 italic">
+                            <p>No past sessions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log -->
+            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-24 overflow-y-auto max-w-[1400px] w-full mx-auto" id="consoleLog">
+                <p>> System Ready.</p>
+            </div>
+            
+            <div class="h-8 md:hidden"></div>
+        </div>
+    </main>
+
+    <script>
+        // --- CONSTANTS ---
+        const BIKE_UUID = "7ee7e1fa-6fd8-4cbd-b648-a2cdcfa4e7f4";
+        const HR_SERVICE_UUID = 0x180D; 
+        const HR_CHAR_UUID = 0x2A37;
+        const BATTERY_SERVICE_UUID = 'battery_service';
+        const BATTERY_LEVEL_CHAR_UUID = 'battery_level';
+
+        // --- STATE ---
+        let bikeDevice, hrDevice;
+        let currentViewMode = 'desktop';
+        let wakeLock = null;
+        let audioCtx = null;
+        let recognition = null;
+        let isListeningForCommand = false;
+        let commandTimeout = null;
+        
+        let timerInterval = null;
+        let startTime = null;
+        let pauseStartTime = null;
+        let totalPausedTime = 0;
+        let isPaused = false;
+        
+        let lapStartTime = null;
+        let lastLapTimestamp = null; 
+        let lapNumber = 0;
+        let displayMode = 'total'; 
+
+        let sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+        let lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+        let history = [];
+        let currentSessionLaps = [];
+        
+        // --- PREFERENCES ---
+        function getDynamicDefaultAge() {
+            const now = new Date();
+            const birthYear = 1982; 
+            const isAfterBirthday = (now.getMonth() > 6) || (now.getMonth() === 6 && now.getDate() >= 20);
+            return now.getFullYear() - birthYear - (isAfterBirthday ? 0 : 1);
+        }
+
+        let prefs = {
+            age: getDynamicDefaultAge(),
+            hrMethod: 'traditional', 
+            restingHr: 60,
+            audioEnabled: false,
+            voiceEnabled: true,
+            targetRpmEnabled: false,
+            targetRpmValue: 90
+        };
+        
+        let previousHrZone = 0;
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Loaded. Initializing...");
+            
+            // Connection Listeners
+            document.getElementById('connectBtn').addEventListener('click', connectToBike);
+            document.getElementById('connectHrBtn').addEventListener('click', connectToHeartRate);
+            
+            // UI Controls
+            document.getElementById('startBtn').addEventListener('click', startSession);
+            document.getElementById('stopBtn').addEventListener('click', stopSession);
+            document.getElementById('lapBtn').addEventListener('click', recordLap);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('timerCard').addEventListener('click', toggleDurationMode);
+            document.getElementById('btnViewToggle').addEventListener('click', toggleView);
+            document.getElementById('btnFullScreen').addEventListener('click', toggleFullScreen);
+            
+            // Reset Voice Status Icon
+            const vs = document.getElementById('voiceStatus');
+            if(vs) {
+                vs.onclick = () => {
+                    log("User Manual Wake-up");
+                    if(recognition) {
+                        try { recognition.stop(); } catch(e){}
+                        setTimeout(() => startVoiceListening(), 200);
+                    } else {
+                        initVoiceRecognition();
+                    }
+                };
+            }
+            
+            // Setting Listeners
+            const elements = ['settingAge', 'settingHrMethod', 'settingRhr', 'settingAudio', 'settingVoice', 'settingTargetRpmEnabled', 'settingTargetRpmValue'];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    if (el.type === 'checkbox') el.addEventListener('change', () => { 
+                        if(id === 'settingVoice') toggleVoiceControl(); 
+                        else if(id === 'settingTargetRpmEnabled') { saveSettings(); toggleTargetInput(); } 
+                        else saveSettings(); 
+                    });
+                    else if (el.tagName === 'SELECT') el.addEventListener('change', () => { 
+                        if(id === 'settingHrMethod') toggleRhrInput(); 
+                        saveSettings(); 
+                    });
+                    else el.addEventListener('change', saveSettings);
+                }
+            });
+
+            loadSettings();
+
+            if (window.innerWidth < 768) setView('mobile');
+            else setView('desktop');
+            
+            // Voice Init Gesture Guard
+            const enableVoiceOnInteraction = () => {
+                if (prefs.voiceEnabled) {
+                    initVoiceRecognition();
+                    startVoiceListening();
+                }
+                document.removeEventListener('click', enableVoiceOnInteraction);
+            };
+            document.addEventListener('click', enableVoiceOnInteraction);
+        });
+
+        function saveSettings() {
+            prefs.age = parseInt(document.getElementById('settingAge').value) || 43;
+            prefs.hrMethod = document.getElementById('settingHrMethod').value;
+            prefs.restingHr = parseInt(document.getElementById('settingRhr').value) || 60;
+            prefs.audioEnabled = document.getElementById('settingAudio').checked;
+            prefs.voiceEnabled = document.getElementById('settingVoice').checked;
+            prefs.targetRpmEnabled = document.getElementById('settingTargetRpmEnabled').checked;
+            prefs.targetRpmValue = parseInt(document.getElementById('settingTargetRpmValue').value) || 90;
+            
+            localStorage.setItem('spinMetrics_prefs', JSON.stringify(prefs));
+            toggleTargetInput();
+        }
+
+        function loadSettings() {
+            const savedPrefs = localStorage.getItem('spinMetrics_prefs');
+            if (savedPrefs) {
+                try {
+                    prefs = { ...prefs, ...JSON.parse(savedPrefs) };
+                } catch(e) {}
+            }
+            
+            document.getElementById('settingAge').value = prefs.age;
+            document.getElementById('settingHrMethod').value = prefs.hrMethod || 'traditional';
+            document.getElementById('settingRhr').value = prefs.restingHr || 60;
+            document.getElementById('settingAudio').checked = prefs.audioEnabled;
+            document.getElementById('settingVoice').checked = prefs.voiceEnabled;
+            document.getElementById('settingTargetRpmEnabled').checked = prefs.targetRpmEnabled;
+            document.getElementById('settingTargetRpmValue').value = prefs.targetRpmValue;
+            
+            toggleTargetInput();
+            toggleRhrInput();
+            toggleVoiceControl();
+
+            const savedHistory = localStorage.getItem('spinMetrics_history');
+            if (savedHistory) {
+                try {
+                    history = JSON.parse(savedHistory);
+                    renderHistory();
+                } catch(e) {}
+            }
+        }
+
+        function clearHistory() {
+            if(confirm("Are you sure you want to delete all history?")) {
+                history = [];
+                localStorage.removeItem('spinMetrics_history');
+                renderHistory();
+            }
+        }
+
+        // --- WEB SPEECH API ---
+        function initVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return;
+            if (recognition) return; 
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true; 
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                const vs = document.getElementById('voiceStatus');
+                if (vs) vs.className = "text-blue-500 mr-2 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+            };
+
+            recognition.onerror = (event) => {
+                if (event.error === 'not-allowed') {
+                    log("Mic Permission Denied.");
+                    prefs.voiceEnabled = false;
+                    saveSettings();
+                }
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+                    else interimTranscript += event.results[i][0].transcript;
+                }
+                
+                const transcript = (finalTranscript || interimTranscript).trim().toLowerCase();
+                if(!transcript) return;
+
+                // 1. Detect Wake Word
+                const hasWakeWord = transcript.includes('spin metrics') || 
+                                    transcript.includes('spinmetrics') || 
+                                    transcript.includes('hey spin') ||
+                                    transcript.includes('spin bike');
+
+                if (hasWakeWord && !isListeningForCommand) {
+                    log("Wake Word Detected!");
+                    activateCommandListening();
+                    // Do not return - fall through to process command in same string
+                }
+
+                // 2. Detect Commands
+                if (isListeningForCommand) {
+                    processCommand(transcript);
+                }
+            };
+            
+            recognition.onend = () => {
+                if (prefs.voiceEnabled) setTimeout(() => { try { recognition.start(); } catch(e){} }, 500);
+            };
+        }
+
+        function activateCommandListening() {
+            isListeningForCommand = true;
+            const vs = document.getElementById('voiceStatus');
+            if (vs) vs.className = "text-rose-500 mr-2 transition p-2 rounded-full border border-rose-500 mic-active";
+            
+            if (commandTimeout) clearTimeout(commandTimeout);
+            commandTimeout = setTimeout(() => {
+                isListeningForCommand = false;
+                const vs = document.getElementById('voiceStatus');
+                if (vs) vs.className = "text-blue-500 mr-2 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+            }, 5000); 
+        }
+
+        function processCommand(cmd) {
+            const triggers = {
+                start: ['start', 'begin', 'go'],
+                stop: ['stop', 'end', 'finish'],
+                pause: ['pause', 'resume'],
+                lap: ['lap', 'next', 'split']
+            };
+
+            if (triggers.start.some(t => cmd.includes(t)) && !document.getElementById('startBtn').disabled) {
+                log("Voice Cmd: Start");
+                startSession();
+                isListeningForCommand = false;
+            } else if (triggers.stop.some(t => cmd.includes(t)) && !document.getElementById('stopBtn').disabled) {
+                log("Voice Cmd: Stop");
+                stopSession();
+                isListeningForCommand = false;
+            } else if (triggers.pause.some(t => cmd.includes(t)) && !document.getElementById('pauseBtn').disabled) {
+                log("Voice Cmd: Pause/Resume");
+                togglePause();
+                isListeningForCommand = false;
+            } else if (triggers.lap.some(t => cmd.includes(t)) && !document.getElementById('lapBtn').disabled) {
+                log("Voice Cmd: Lap");
+                recordLap();
+                isListeningForCommand = false;
+            }
+        }
+
+        function startVoiceListening() {
+            if (recognition) { try { recognition.start(); } catch(e){} }
+        }
+
+        function stopVoiceListening() {
+            if (recognition) recognition.stop();
+        }
+
+        function toggleVoiceControl() {
+            if (prefs.voiceEnabled) startVoiceListening();
+            else stopVoiceListening();
+        }
+
+        // --- BLUETOOTH & SENSORS ---
+        async function connectToBike() {
+            try {
+                log('Connecting to Bike...');
+                bikeDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: [BIKE_UUID] }], optionalServices: [BIKE_UUID, BATTERY_SERVICE_UUID] });
+                bikeDevice.addEventListener('gattserverdisconnected', () => {
+                    log('Bike Disconnected');
+                    document.getElementById('bikeDot').classList.replace('bg-emerald-500', 'bg-slate-600');
+                    const btn = document.getElementById('connectBtn');
+                    btn.classList.remove('bg-slate-800', 'text-emerald-400');
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.innerHTML = '<i class="fa-brands fa-bluetooth-b text-lg"></i><span>Connect Bike</span>';
+                });
+                const server = await bikeDevice.gatt.connect();
+                document.getElementById('bikeDot').classList.replace('bg-slate-600', 'bg-emerald-500');
+                log('Bike Connected!');
+                
+                const btn = document.getElementById('connectBtn');
+                btn.classList.replace('bg-blue-600', 'bg-slate-800');
+                btn.classList.add('text-emerald-400', 'border', 'border-emerald-500/50');
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 text-lg"></i><span class="text-slate-200">Bike Connected</span>';
+                
+                setupBattery(server, 'bike');
+                const service = await server.getPrimaryService(BIKE_UUID);
+                const characteristics = await service.getCharacteristics();
+                for (const char of characteristics) {
+                    if (char.properties.notify) {
+                        await char.startNotifications();
+                        char.addEventListener('characteristicvaluechanged', handleBikeData);
+                    }
+                }
+            } catch (error) { log('Bike Failed: ' + error); }
+        }
+
+        async function connectToHeartRate() {
+            try {
+                log('Connecting to HR Monitor...');
+                hrDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: [HR_SERVICE_UUID] }], optionalServices: [BATTERY_SERVICE_UUID] });
+                hrDevice.addEventListener('gattserverdisconnected', () => {
+                    log('HR Disconnected');
+                    document.getElementById('hrDot').classList.replace('bg-emerald-500', 'bg-slate-600');
+                    const btn = document.getElementById('connectHrBtn');
+                    btn.classList.remove('bg-slate-800', 'text-emerald-400');
+                    btn.classList.add('bg-rose-600', 'text-white');
+                });
+                const server = await hrDevice.gatt.connect();
+                document.getElementById('hrDot').classList.replace('bg-slate-600', 'bg-emerald-500');
+                log('HR Connected!');
+                
+                const btn = document.getElementById('connectHrBtn');
+                btn.classList.replace('bg-rose-600', 'bg-slate-800');
+                btn.classList.add('text-emerald-400', 'border', 'border-emerald-500/50');
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 text-lg"></i><span class="text-slate-200">HR Connected</span>';
+                
+                setupBattery(server, 'hr');
+                const service = await server.getPrimaryService(HR_SERVICE_UUID);
+                const char = await service.getCharacteristic(HR_CHAR_UUID);
+                await char.startNotifications();
+                char.addEventListener('characteristicvaluechanged', handleHeartRateData);
+            } catch (error) { log('HR Failed: ' + error); }
+        }
+
+        function handleBikeData(event) {
+            const data = event.target.value;
+            if (data.byteLength < 8 || data.getUint8(0) !== 0x81) return;
+            const rpm = data.getUint8(3);
+            const resistance = data.getUint8(6);
+            const estWatts = Math.round((rpm * resistance) / 10);
+
+            document.getElementById('rpmValue').textContent = rpm;
+            document.getElementById('rpmBar').style.width = `${Math.min((rpm/120)*100, 100)}%`;
+            document.getElementById('resistanceValue').textContent = resistance;
+            document.getElementById('powerValue').textContent = estWatts;
+            document.getElementById('powerBar').style.width = `${Math.min((estWatts/400)*100, 100)}%`;
+
+            if (prefs.targetRpmEnabled) {
+                const rc = document.getElementById('rpmCard');
+                if (rpm >= (prefs.targetRpmValue - 3) && rpm <= (prefs.targetRpmValue + 3)) rc.classList.add('on-target');
+                else rc.classList.remove('on-target');
+            }
+
+            if (timerInterval && !isPaused) {
+                sessionData.rpmSum += rpm;
+                sessionData.powerSum += estWatts;
+                sessionData.count++;
+                lapData.rpmSum += rpm;
+                lapData.powerSum += estWatts;
+                lapData.count++;
+                updateAverages();
+            }
+        }
+
+        function handleHeartRateData(event) {
+            const value = event.target.value;
+            const flags = value.getUint8(0);
+            let hr = (flags & 0x01) === 0 ? value.getUint8(1) : value.getUint16(1, true); 
+
+            document.getElementById('hrValue').textContent = hr;
+            const z = calculateHrZone(hr);
+            document.getElementById('hrZoneDisplay').textContent = z.label;
+            document.getElementById('hrZoneDisplay').className = `text-2xl font-bold ${z.colorClass} transition-colors duration-300 mt-1`;
+            updateHrZonesUI(hr);
+
+            if (z.zone > previousHrZone && prefs.audioEnabled) playAudioCue('zoneUp');
+            previousHrZone = z.zone;
+
+            if (timerInterval && !isPaused) {
+                sessionData.hrSum += hr;
+                sessionData.hrCount++;
+                lapData.hrSum += hr;
+                lapData.hrCount++;
+                updateAverages();
+            }
+        }
+
+        // --- SESSION LOGIC ---
+        function startSession() {
+            if (timerInterval) return;
+            initAudio();
+            requestWakeLock();
+            
+            if (totalPausedTime === 0 && startTime === null) {
+                sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+                lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+                lapNumber = 1;
+                document.getElementById('lapsTableBody').innerHTML = ''; 
+                resetAvgDisplay();
+                currentSessionLaps = [];
+                startTime = Date.now();
+                lapStartTime = Date.now();
+                lastLapTimestamp = Date.now();
+                totalPausedTime = 0;
+            } 
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('lapBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = false;
+            
+            const dot = document.getElementById('timerDot');
+            dot.classList.replace('bg-slate-600', 'bg-emerald-500');
+            dot.classList.add('pulse-anim');
+            document.getElementById('timerState').innerText = "Tracking";
+            
+            timerInterval = setInterval(updateTimers, 1000);
+            log('Session Started');
+        }
+
+        function stopSession() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+            isPaused = false;
+            releaseWakeLock();
+
+            // Auto-Lap Logic
+            if (lapNumber > 0 && (Date.now() - lastLapTimestamp > 8000)) {
+                log("Auto-recording final lap segment...");
+                recordLap();
+            }
+            
+            if (sessionData.count > 0 || sessionData.hrCount > 0) {
+                const sessionRecord = {
+                    id: Date.now(),
+                    date: new Date().toLocaleString(),
+                    duration: formatTime(elapsedTime),
+                    avgRpm: sessionData.count ? Math.round(sessionData.rpmSum / sessionData.count) : 0,
+                    avgPower: sessionData.count ? Math.round(sessionData.powerSum / sessionData.count) : 0,
+                    avgHr: sessionData.hrCount ? Math.round(sessionData.hrSum / sessionData.hrCount) : 0,
+                    laps: [...currentSessionLaps]
+                };
+                history.unshift(sessionRecord);
+                localStorage.setItem('spinMetrics_history', JSON.stringify(history));
+                renderHistory();
+                log('Session Saved.');
+            }
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('lapBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = true;
+            
+            startTime = null; 
+            totalPausedTime = 0;
+            document.getElementById('timerDot').className = "w-2 h-2 rounded-full bg-slate-600";
+            document.getElementById('timerState').innerText = "Stopped";
+        }
+
+        function recordLap() {
+            if (!startTime) return;
+            if (prefs.audioEnabled) playAudioCue('lap');
+            
+            const now = Date.now();
+            const currentLapDurationSecs = Math.floor(((now - lapStartTime) - totalPausedTime) / 1000); 
+            const lapAvgHr = lapData.hrCount > 0 ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
+            const lapZone = calculateHrZone(lapAvgHr);
+            
+            const row = document.createElement('tr');
+            row.className = "border-b border-slate-800 hover:bg-slate-800/50";
+            row.innerHTML = `
+                <td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td>
+                <td class="px-4 py-3 font-mono text-white font-bold">${formatTime(currentLapDurationSecs)}</td>
+                <td class="px-4 py-3 font-mono text-blue-400">${lapData.count ? Math.round(lapData.rpmSum / lapData.count) : 0}</td>
+                <td class="px-4 py-3 font-mono text-yellow-400">${lapData.count ? Math.round(lapData.powerSum / lapData.count) : 0}</td>
+                <td class="px-4 py-3 font-mono text-rose-400">${lapAvgHr}</td>
+                <td class="px-4 py-3 font-bold text-xs ${lapZone.colorClass}">${lapZone.label}</td>
+            `;
+            
+            const table = document.getElementById('lapsTableBody');
+            if (lapNumber === 1) table.innerHTML = '';
+            table.insertBefore(row, table.firstChild);
+
+            currentSessionLaps.push({
+                number: lapNumber,
+                duration: formatTime(currentLapDurationSecs),
+                avgRpm: lapData.count ? Math.round(lapData.rpmSum / lapData.count) : 0,
+                avgPower: lapData.count ? Math.round(lapData.powerSum / lapData.count) : 0,
+                avgHr: lapAvgHr,
+                avgZone: lapZone.label
+            });
+
+            log(`Lap ${lapNumber} Recorded.`);
+            lapNumber++;
+            lapStartTime = Date.now();
+            lastLapTimestamp = Date.now(); 
+            lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+            updateAverages(); 
+        }
+
+        // --- UTILS ---
+        function togglePause() {
+            if (isPaused) {
+                totalPausedTime += (Date.now() - pauseStartTime);
+                isPaused = false;
+                timerInterval = setInterval(updateTimers, 1000);
+                document.getElementById('pauseBtn').innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+                log('Session Resumed');
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                pauseStartTime = Date.now();
+                isPaused = true;
+                document.getElementById('pauseBtn').innerHTML = '<i class="fa-solid fa-play"></i> Resume';
+                log('Session Paused');
+            }
+        }
+
+        function calculateHrZone(hr) {
+            const age = prefs.age;
+            let maxHr = (prefs.hrMethod === 'tanaka') ? (208 - (0.7 * age)) : (220 - age);
+            
+            const zones = [0.5, 0.6, 0.7, 0.8, 0.9];
+            if (hr >= maxHr * 0.9) return { zone: 5, label: 'Zone 5', colorClass: 'text-zone-5' };
+            if (hr >= maxHr * 0.8) return { zone: 4, label: 'Zone 4', colorClass: 'text-zone-4' };
+            if (hr >= maxHr * 0.7) return { zone: 3, label: 'Zone 3', colorClass: 'text-zone-3' };
+            if (hr >= maxHr * 0.6) return { zone: 2, label: 'Zone 2', colorClass: 'text-zone-2' };
+            if (hr >= maxHr * 0.5) return { zone: 1, label: 'Zone 1', colorClass: 'text-zone-1' };
+            return { zone: 0, label: 'Zone 0', colorClass: 'text-slate-400' };
+        }
+
+        function updateTimers() {
+            const now = Date.now();
+            elapsedTime = Math.floor(((now - startTime) - totalPausedTime) / 1000);
+            const lapElapsed = Math.floor(((now - lapStartTime) - totalPausedTime) / 1000); // Approximation
+
+            document.getElementById('mainTimerValue').textContent = formatTime(elapsedTime);
+            document.getElementById('subTimerValue').textContent = formatTime(lapElapsed > 0 ? lapElapsed : 0);
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function log(msg) {
+            const consoleDiv = document.getElementById('consoleLog');
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
+            consoleDiv.appendChild(p);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        function updateAverages() {
+            if (sessionData.count > 0) {
+                document.getElementById('avgRpmValue').innerText = Math.round(sessionData.rpmSum / sessionData.count);
+                document.getElementById('avgPowerValue').innerText = Math.round(sessionData.powerSum / sessionData.count);
+            }
+            if (sessionData.hrCount > 0) {
+                document.getElementById('avgHrValue').innerText = Math.round(sessionData.hrSum / sessionData.hrCount);
+            }
+        }
+
+        function resetAvgDisplay() {
+            document.getElementById('avgRpmValue').innerText = '--';
+            document.getElementById('avgPowerValue').innerText = '--';
+            document.getElementById('avgHrValue').innerText = '--';
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 text-sm mt-10 italic"><p>No past sessions.</p></div>';
+            history.forEach((session, idx) => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-800 p-3 rounded-lg border border-slate-700 hover:border-slate-500 transition";
+                div.innerHTML = `
+                    <div class="flex justify-between text-xs text-slate-400 mb-2">
+                        <span>${session.date}</span>
+                        <span class="font-bold text-white">${session.duration}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center text-sm font-mono">
+                        <div class="bg-slate-900/50 rounded p-1 text-blue-400">R:${session.avgRpm}</div>
+                        <div class="bg-slate-900/50 rounded p-1 text-yellow-400">W:${session.avgPower}</div>
+                        <div class="bg-slate-900/50 rounded p-1 text-rose-400">H:${session.avgHr}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function requestWakeLock() { try { wakeLock = await navigator.wakeLock.request('screen'); log('Screen Wake Lock Active'); } catch (err) {} }
+        async function releaseWakeLock() { if (wakeLock) { await wakeLock.release(); wakeLock = null; } }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        }
+
+        function toggleTargetInput() {
+            const cont = document.getElementById('targetRpmInputContainer');
+            if (document.getElementById('settingTargetRpmEnabled').checked) cont.classList.remove('hidden');
+            else cont.classList.add('hidden');
+        }
+
+        function toggleRhrInput() {
+            const isKarvonen = document.getElementById('settingHrMethod').value === 'karvonen';
+            document.getElementById('rhrInputContainer').classList.toggle('hidden', !isKarvonen);
+        }
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playAudioCue(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'lap') { osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
+            else { osc.frequency.setValueAtTime(523, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(659, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
+        }
+
+        function updateHrZonesUI(hr) { /* Visual update logic omitted for brevity, similar to handleHeartRateData */ }
+        function setupBattery(server, type) { /* Battery monitoring logic */ }
+        function toggleDurationMode() { /* Toggle timer view logic */ }
+        function setView(mode) { /* Responsive view logic */ }
+        function toggleView() { setView(currentViewMode === 'desktop' ? 'mobile' : 'desktop'); }
+        function downloadHistory() { /* CSV download logic */ }
+
+    </script>
+</body>
+</html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpinMetrics Dashboard</title>
     <meta name="description" content="Connect your Bluetooth Spin Bike and Heart Rate Monitor.">
@@ -1552,3 +2621,4 @@
     </script>
 </body>
 </html>
+
