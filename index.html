@@ -504,19 +504,25 @@
         let previousHrZone = 0;
 
         // --- INITIALIZATION ---
+        // CRITICAL FIX: Ensure buttons connect immediately, then load settings safely
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM Loaded. Initializing...");
             
-            // 1. Attach Event Listeners FIRST to ensure buttons work even if settings fail
+            // 1. Attach Event Listeners FIRST to ensure buttons work even if settings fail later
             const btnConnectBike = document.getElementById('connectBtn');
             const btnConnectHr = document.getElementById('connectHrBtn');
             
-            if (btnConnectBike) btnConnectBike.addEventListener('click', connectToBike);
-            else console.error("Connect Bike button not found!");
+            if (btnConnectBike) {
+                btnConnectBike.addEventListener('click', connectToBike);
+                console.log("Bike Button Listener Attached");
+            } else console.error("Connect Bike button not found!");
             
-            if (btnConnectHr) btnConnectHr.addEventListener('click', connectToHeartRate);
-            else console.error("Connect HR button not found!");
+            if (btnConnectHr) {
+                btnConnectHr.addEventListener('click', connectToHeartRate);
+                console.log("HR Button Listener Attached");
+            } else console.error("Connect HR button not found!");
             
+            // UI Controls
             document.getElementById('startBtn').addEventListener('click', startSession);
             document.getElementById('stopBtn').addEventListener('click', stopSession);
             document.getElementById('lapBtn').addEventListener('click', recordLap);
@@ -530,8 +536,15 @@
             elements.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) {
-                    if (el.type === 'checkbox') el.addEventListener('change', () => { if(id === 'settingVoice') toggleVoiceControl(); else if(id === 'settingTargetRpmEnabled') { saveSettings(); toggleTargetInput(); } else saveSettings(); });
-                    else if (el.tagName === 'SELECT') el.addEventListener('change', () => { if(id === 'settingHrMethod') toggleRhrInput(); saveSettings(); });
+                    if (el.type === 'checkbox') el.addEventListener('change', () => { 
+                        if(id === 'settingVoice') toggleVoiceControl(); 
+                        else if(id === 'settingTargetRpmEnabled') { saveSettings(); toggleTargetInput(); } 
+                        else saveSettings(); 
+                    });
+                    else if (el.tagName === 'SELECT') el.addEventListener('change', () => { 
+                        if(id === 'settingHrMethod') toggleRhrInput(); 
+                        saveSettings(); 
+                    });
                     else el.addEventListener('change', saveSettings);
                 }
             });
@@ -595,6 +608,7 @@
                 } catch(e) { console.error("Bad settings", e); }
             }
             
+            // Safe assignments with checks
             const sa = document.getElementById('settingAge');
             if(sa) sa.value = prefs.age;
             
@@ -1032,10 +1046,10 @@
                     document.getElementById('bikeDot').classList.replace('bg-emerald-500', 'bg-slate-600');
                     document.getElementById('bikeBatt').classList.add('hidden');
                     
-                    // Reset Button Style
-                    connectBtn.classList.remove('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'shadow-none');
-                    connectBtn.classList.add('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-900/20', 'text-white');
-                    connectBtn.innerHTML = '<i class="fa-brands fa-bluetooth-b text-lg"></i><span>Connect Bike</span>';
+                    const btn = document.getElementById('connectBtn');
+                    btn.classList.remove('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'shadow-none');
+                    btn.classList.add('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-900/20', 'text-white');
+                    btn.innerHTML = '<i class="fa-brands fa-bluetooth-b text-lg"></i><span>Connect Bike</span>';
                 });
                 const server = await bikeDevice.gatt.connect();
                 document.getElementById('bikeDot').classList.replace('bg-slate-600', 'bg-emerald-500');
