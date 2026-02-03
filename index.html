@@ -38,24 +38,23 @@
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
-        .heart-beat {
-            animation: beat 1s infinite;
-        }
-        @keyframes beat {
-            0% { transform: scale(1); }
-            15% { transform: scale(1.15); }
-            30% { transform: scale(1); }
-            45% { transform: scale(1.15); }
-            60% { transform: scale(1); }
-        }
         .mic-listening {
-            animation: pulse-red 1s infinite;
+            animation: pulse-blue 2s infinite;
+            color: #3b82f6; /* Blue 500 */
+        }
+        @keyframes pulse-blue {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+            100% { opacity: 0.7; }
+        }
+        .mic-active {
             color: #f43f5e; /* Rose 500 */
+            animation: pulse-red 0.5s infinite;
         }
         @keyframes pulse-red {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         /* Custom Scrollbar */
@@ -105,7 +104,8 @@
         <div class="flex items-center gap-3 md:gap-4">
             
             <!-- Voice Indicator -->
-            <button id="voiceStatus" class="hidden text-slate-600 mr-2 hover:text-white transition" title="Voice Control Active (Click to Speak)">
+            <!-- Changed: Always visible, changes color based on state -->
+            <button id="voiceStatus" class="text-slate-600 mr-2 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset)">
                 <i class="fa-solid fa-microphone"></i>
             </button>
 
@@ -535,8 +535,14 @@
             const vs = document.getElementById('voiceStatus');
             if(vs) {
                 vs.onclick = () => {
-                    log("Manual Voice Wake-up");
-                    activateCommandListening();
+                    log("User Clicked Mic Icon - Restarting Voice");
+                    // Force restart
+                    if(recognition) {
+                        try { recognition.stop(); } catch(e){}
+                        setTimeout(() => startVoiceListening(), 200);
+                    } else {
+                        initVoiceRecognition();
+                    }
                 };
             }
             
@@ -576,7 +582,10 @@
                 // Browsers require user gesture to start audio. 
                 // We attach a one-time listener to start it on first click if enabled.
                 const enableVoiceOnInteraction = () => {
-                    if (prefs.voiceEnabled) startVoiceListening();
+                    if (prefs.voiceEnabled) {
+                        log("Interaction detected. Enabling Voice.");
+                        startVoiceListening();
+                    }
                     document.removeEventListener('click', enableVoiceOnInteraction);
                     document.removeEventListener('touchstart', enableVoiceOnInteraction);
                 };
@@ -588,6 +597,7 @@
                 
             } catch (e) {
                 console.error("Voice Init Failed:", e);
+                log("Voice Init Failed: " + e.message);
             }
         });
 
@@ -712,68 +722,106 @@
             const st = document.getElementById('voiceStatus');
             if (prefs.voiceEnabled) {
                 startVoiceListening();
-                if(st) st.classList.remove('hidden');
+                // st.classList.remove('hidden'); // Removed hidden class from logic
             } else {
                 stopVoiceListening();
-                if(st) st.classList.add('hidden');
+                // st.classList.add('hidden');
             }
         }
 
         // --- WEB SPEECH API ---
         function initVoiceRecognition() {
-            if (!('webkitSpeechRecognition' in window)) {
-                log("Voice control not supported in this browser.");
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                log("Error: Voice API not supported.");
                 return;
             }
             
-            if (recognition) return; // Prevent multiple instances
+            if (recognition) return; 
 
-            recognition = new webkitSpeechRecognition();
+            log("Voice API found. Initializing...");
+            recognition = new SpeechRecognition();
             recognition.continuous = true;
-            recognition.interimResults = false;
+            recognition.interimResults = true; // IMPORTANT: Set true to see partials
             recognition.lang = 'en-US';
 
             recognition.onstart = function() {
                 const vs = document.getElementById('voiceStatus');
-                if (vs) vs.classList.remove('hidden');
-                // log("Voice recognition started."); // Optional: too noisy
+                if (vs) {
+                    vs.className = "text-blue-500 mr-2 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+                    vs.title = "Listening (Click to reset)";
+                }
+                log("Voice: Listening..."); 
             };
 
             recognition.onerror = function(event) {
                 if (event.error === 'not-allowed') {
-                    log("Mic Permission Denied.");
+                    log("Error: Mic Permission Denied.");
                     prefs.voiceEnabled = false;
                     saveSettings();
                     const sv = document.getElementById('settingVoice');
                     if (sv) sv.checked = false;
-                    alert("Microphone access denied. Voice control disabled.");
-                } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    const vs = document.getElementById('voiceStatus');
+                    if (vs) vs.className = "text-slate-600 mr-2 transition p-2 rounded-full border border-red-500";
+                } else {
                     log("Voice error: " + event.error);
                 }
             };
 
             recognition.onresult = function(event) {
-                const last = event.results.length - 1;
-                const transcript = event.results[last][0].transcript.trim().toLowerCase();
-                log("Heard: " + transcript);
+                let interimTranscript = '';
+                let finalTranscript = '';
 
-                // Wake Word Logic (Expanded for robustness)
-                if (transcript.includes('spin metrics') || transcript.includes('spinmetrics') || transcript.includes('hey spin')) {
-                    activateCommandListening();
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                
+                const transcript = (finalTranscript || interimTranscript).trim().toLowerCase();
+                
+                // Only log final or significant interim
+                if(transcript.length > 0) {
+                    const vs = document.getElementById('voiceStatus');
+                    // Visual feedback we heard *something*
+                    if(vs) vs.style.opacity = '1';
+                    
+                    // Debounce logs slightly to avoid flooding
+                    // log("Heard: " + transcript); 
+                }
+
+                if (isListeningForCommand) {
                     processCommand(transcript);
-                } else if (isListeningForCommand) {
-                    processCommand(transcript);
+                } else {
+                    // Wake Word Logic
+                    if (transcript.includes('spin metrics') || 
+                        transcript.includes('spinmetrics') || 
+                        transcript.includes('hey spin') ||
+                        transcript.includes('spin bike')) {
+                        
+                        log("Wake Word Detected!");
+                        activateCommandListening();
+                        processCommand(transcript);
+                    }
                 }
             };
             
             recognition.onend = function() {
+                log("Voice: Service Stopped/Paused.");
+                const vs = document.getElementById('voiceStatus');
+                if (vs) {
+                    vs.className = "text-slate-600 mr-2 transition p-2 rounded-full border border-transparent hover:border-slate-700";
+                    vs.title = "Voice Inactive (Click to Wake)";
+                }
+                
                 if (prefs.voiceEnabled) {
+                    // Try to restart if supposed to be running
                     setTimeout(() => {
                         try { recognition.start(); } catch(e){}
-                    }, 1000); // 1s delay to prevent crash loops
-                } else {
-                    const vs = document.getElementById('voiceStatus');
-                    if (vs) vs.classList.add('hidden');
+                    }, 1000); 
                 }
             };
         }
@@ -783,11 +831,13 @@
                 try { 
                     recognition.start(); 
                 } catch(e) {
-                    // Ignore "already started" errors
-                    if (e.name !== 'InvalidStateError') {
-                        console.error(e);
-                    }
+                    // e.g. already started
                 } 
+            } else {
+                initVoiceRecognition();
+                setTimeout(() => {
+                     try { recognition.start(); } catch(e){}
+                }, 100);
             }
         }
         
@@ -799,16 +849,15 @@
             isListeningForCommand = true;
             const vs = document.getElementById('voiceStatus');
             if (vs) {
-                vs.classList.add('mic-listening');
-                vs.innerHTML = '<i class="fa-solid fa-microphone text-rose-500"></i>';
+                vs.className = "text-rose-500 mr-2 transition p-2 rounded-full border border-rose-500 mic-active";
             }
             
             if (commandTimeout) clearTimeout(commandTimeout);
             commandTimeout = setTimeout(() => {
                 isListeningForCommand = false;
                 if (vs) {
-                    vs.classList.remove('mic-listening');
-                    vs.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                    // Revert to listening state visual
+                    vs.className = "text-blue-500 mr-2 transition p-2 rounded-full border border-blue-500/50 mic-listening";
                 }
             }, 5000); // 5 Seconds Timeout
         }
@@ -819,28 +868,33 @@
             const pauseBtn = document.getElementById('pauseBtn');
             const lapBtn = document.getElementById('lapBtn');
             
-            if (cmd.includes('start') || cmd.includes('begin')) {
+            // Simple string matching
+            if (cmd.includes('start') || cmd.includes('begin') || cmd.includes('go')) {
                 if (!startBtn.disabled) { 
                     log("Voice Cmd: Start");
                     startSession();
+                    isListeningForCommand = false; // Reset after successful command
                 }
             } 
-            else if (cmd.includes('stop')) {
+            else if (cmd.includes('stop') || cmd.includes('end') || cmd.includes('finish')) {
                 if (!stopBtn.disabled) {
                     log("Voice Cmd: Stop");
                     stopSession();
+                    isListeningForCommand = false;
                 }
             }
             else if (cmd.includes('pause') || cmd.includes('resume')) {
                 if (!pauseBtn.disabled) {
                     log("Voice Cmd: Pause/Resume");
                     togglePause();
+                    isListeningForCommand = false;
                 }
             }
-            else if (cmd.includes('lap')) {
+            else if (cmd.includes('lap') || cmd.includes('next') || cmd.includes('split')) {
                 if (!lapBtn.disabled) {
                     log("Voice Cmd: Lap");
                     recordLap();
+                    isListeningForCommand = false;
                 }
             }
         }
