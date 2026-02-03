@@ -101,8 +101,8 @@
         </div>
 
         <div class="flex items-center gap-3 md:gap-4">
-            <!-- Voice Indicator -->
-            <div class="flex items-center">
+            <!-- Voice Indicator Group -->
+            <div class="flex items-center gap-1 bg-slate-900/50 p-1 rounded-full border border-slate-800">
                 <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset)">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
@@ -496,6 +496,7 @@
         let recognition = null;
         let isListeningForCommand = false;
         let commandTimeout = null;
+        let lastCommandProcessedTime = 0;
         
         let timerInterval = null;
         let startTime = null;
@@ -503,7 +504,7 @@
         let totalPausedTime = 0;
         let isPaused = false;
         
-        let lapStartTime = null;
+        let sessionDurationAtLapStart = 0;
         let lastLapTimestamp = null; 
         let lapNumber = 0;
         let displayMode = 'total'; 
@@ -512,6 +513,7 @@
         let lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
         let history = [];
         let currentSessionLaps = [];
+        let elapsedTime = 0;
         
         // --- PREFERENCES ---
         function getDynamicDefaultAge() {
@@ -627,12 +629,15 @@
 
             recognition.onresult = (event) => {
                 let fullBuffer = '';
+                // Gather full current transcript buffer to catch wake words properly
                 for (let i = 0; i < event.results.length; ++i) {
                     fullBuffer += event.results[i][0].transcript;
                 }
                 const cmd = fullBuffer.trim().toLowerCase();
+                if (!cmd) return;
 
-                const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike'];
+                // High Sensitivity Detection
+                const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike', 'hey metrics'];
                 const matchedWake = wakeWords.some(w => cmd.includes(w));
 
                 if (matchedWake && !isListeningForCommand) {
@@ -651,7 +656,7 @@
                         if (prefs.voiceEnabled) {
                             try { recognition.start(); } catch(e){} 
                         }
-                    }, 400);
+                    }, 300);
                 }
             };
         }
@@ -678,6 +683,10 @@
                 switch: ['switch', 'duration', 'swap', 'change', 'toggle duration']
             };
 
+            // Throttle commands to prevent rapid-fire triggers (e.g., duplicate laps)
+            const now = Date.now();
+            if (now - lastCommandProcessedTime < 1500) return;
+
             let commandExecuted = false;
 
             if (triggers.switch.some(t => cmd.includes(t))) {
@@ -703,8 +712,12 @@
             }
 
             if (commandExecuted) {
+                lastCommandProcessedTime = now;
                 isListeningForCommand = false;
-                try { recognition.stop(); } catch(e){}
+                // Important: We don't stop the engine here anymore to maintain sensitivity.
+                // The throttle and state reset handle the logic cleanup.
+                const vs = document.getElementById('voiceStatus');
+                if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
             }
         }
 
@@ -933,7 +946,7 @@
                 document.getElementById('lapsTableBody').innerHTML = ''; 
                 currentSessionLaps = [];
                 startTime = Date.now();
-                lapStartTime = Date.now();
+                sessionDurationAtLapStart = 0;
                 lastLapTimestamp = Date.now();
                 totalPausedTime = 0;
             } 
@@ -969,7 +982,11 @@
             timerInterval = null;
             isPaused = false;
             releaseWakeLock();
-            if (lapNumber > 0 && (Date.now() - lastLapTimestamp > 5000)) recordLap();
+            
+            // Auto-final lap logic: Check if a significant amount of time has passed since the last lap record
+            if (lapNumber > 0 && (elapsedTime - sessionDurationAtLapStart > 5)) {
+                recordLap();
+            }
             
             if (startTime) {
                 history.unshift({
@@ -991,18 +1008,24 @@
             startTime = null; 
             document.getElementById('timerDot').className = "w-2 h-2 rounded-full bg-slate-600";
             document.getElementById('timerState').innerText = "Stopped";
+            elapsedTime = 0;
+            sessionDurationAtLapStart = 0;
+            totalPausedTime = 0;
         }
 
         function recordLap() {
             if (!startTime) return;
-            const currentDur = Math.floor(((Date.now() - lapStartTime) - totalPausedTime) / 1000);
+            // Redesigned lap duration logic: Delta of total session duration
+            const currentDur = elapsedTime - sessionDurationAtLapStart;
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
+            
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
             row.innerHTML = `<td class="px-4 py-3">${lapNumber}</td><td class="px-4 py-3 font-bold">${formatTime(currentDur)}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3">${avgHr}</td><td class="px-4 py-3 text-xs">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
+            
             lapNumber++;
-            lapStartTime = Date.now();
+            sessionDurationAtLapStart = elapsedTime; // Reset lap anchor to current session time
             lastLapTimestamp = Date.now(); 
             lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
             log('Lap Recorded');
@@ -1044,11 +1067,10 @@
             return { zone: 0, label: 'Zone 0', colorClass: 'text-slate-400' };
         }
 
-        let elapsedTime = 0;
         function updateTimers() {
             if (!startTime) return;
             elapsedTime = Math.floor(((Date.now() - startTime) - totalPausedTime) / 1000);
-            const lapElapsed = Math.floor(((Date.now() - lapStartTime) - totalPausedTime) / 1000);
+            const lapElapsed = elapsedTime - sessionDurationAtLapStart;
             const displayMain = (displayMode === 'total') ? elapsedTime : lapElapsed;
             const displaySub = (displayMode === 'total') ? lapElapsed : elapsedTime;
             document.getElementById('mainTimerValue').textContent = formatTime(displayMain > 0 ? displayMain : 0);
