@@ -564,6 +564,19 @@
             // 4. Voice Init
             try {
                 initVoiceRecognition();
+                // Browsers require user gesture to start audio. 
+                // We attach a one-time listener to start it on first click if enabled.
+                const enableVoiceOnInteraction = () => {
+                    if (prefs.voiceEnabled) startVoiceListening();
+                    document.removeEventListener('click', enableVoiceOnInteraction);
+                    document.removeEventListener('touchstart', enableVoiceOnInteraction);
+                };
+                document.addEventListener('click', enableVoiceOnInteraction);
+                document.addEventListener('touchstart', enableVoiceOnInteraction);
+                
+                // Also try immediately just in case (e.g. page reload with permission already granted)
+                if (prefs.voiceEnabled) startVoiceListening();
+                
             } catch (e) {
                 console.error("Voice Init Failed:", e);
             }
@@ -699,21 +712,43 @@
 
         // --- WEB SPEECH API ---
         function initVoiceRecognition() {
-            if (!('webkitSpeechRecognition' in window)) return;
+            if (!('webkitSpeechRecognition' in window)) {
+                log("Voice control not supported in this browser.");
+                return;
+            }
             
+            if (recognition) return; // Prevent multiple instances
+
             recognition = new webkitSpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = false;
             recognition.lang = 'en-US';
 
+            recognition.onstart = function() {
+                const vs = document.getElementById('voiceStatus');
+                if (vs) vs.classList.remove('hidden');
+                // log("Voice recognition started."); // Optional: too noisy
+            };
+
+            recognition.onerror = function(event) {
+                // log("Voice error: " + event.error);
+                if (event.error === 'not-allowed') {
+                    prefs.voiceEnabled = false;
+                    saveSettings();
+                    const sv = document.getElementById('settingVoice');
+                    if (sv) sv.checked = false;
+                    alert("Microphone access denied. Voice control disabled.");
+                }
+            };
+
             recognition.onresult = function(event) {
                 const last = event.results.length - 1;
                 const transcript = event.results[last][0].transcript.trim().toLowerCase();
-                
+                // log("Heard: " + transcript); // Debugging help
+
                 // Wake Word Logic
                 if (transcript.includes('spin metrics') || transcript.includes('spinmetrics') || transcript.includes('hey spin')) {
                     activateCommandListening();
-                    // If command is in same sentence
                     processCommand(transcript);
                 } else if (isListeningForCommand) {
                     processCommand(transcript);
@@ -721,10 +756,15 @@
             };
             
             recognition.onend = function() {
-                if (prefs.voiceEnabled) recognition.start();
+                if (prefs.voiceEnabled) {
+                    setTimeout(() => {
+                        try { recognition.start(); } catch(e){}
+                    }, 1000); // 1s delay to prevent crash loops
+                } else {
+                    const vs = document.getElementById('voiceStatus');
+                    if (vs) vs.classList.add('hidden');
+                }
             };
-            
-            if (prefs.voiceEnabled) startVoiceListening();
         }
         
         function startVoiceListening() {
