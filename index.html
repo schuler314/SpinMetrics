@@ -105,9 +105,9 @@
         <div class="flex items-center gap-3 md:gap-4">
             
             <!-- Voice Indicator -->
-            <div id="voiceStatus" class="hidden text-slate-600 mr-2">
+            <button id="voiceStatus" class="hidden text-slate-600 mr-2 hover:text-white transition" title="Voice Control Active (Click to Speak)">
                 <i class="fa-solid fa-microphone"></i>
-            </div>
+            </button>
 
             <!-- Settings Button -->
             <button onclick="document.getElementById('settingsModal').showModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white p-2 px-3 rounded-lg border border-slate-700 transition" title="Settings">
@@ -531,6 +531,15 @@
             document.getElementById('btnViewToggle').addEventListener('click', toggleView);
             document.getElementById('btnFullScreen').addEventListener('click', toggleFullScreen);
             
+            // Make voice status icon clickable to manually wake up
+            const vs = document.getElementById('voiceStatus');
+            if(vs) {
+                vs.onclick = () => {
+                    log("Manual Voice Wake-up");
+                    activateCommandListening();
+                };
+            }
+            
             // Setting Listeners
             const elements = ['settingAge', 'settingHrMethod', 'settingRhr', 'settingAudio', 'settingVoice', 'settingTargetRpmEnabled', 'settingTargetRpmValue'];
             elements.forEach(id => {
@@ -731,22 +740,24 @@
             };
 
             recognition.onerror = function(event) {
-                // log("Voice error: " + event.error);
                 if (event.error === 'not-allowed') {
+                    log("Mic Permission Denied.");
                     prefs.voiceEnabled = false;
                     saveSettings();
                     const sv = document.getElementById('settingVoice');
                     if (sv) sv.checked = false;
                     alert("Microphone access denied. Voice control disabled.");
+                } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    log("Voice error: " + event.error);
                 }
             };
 
             recognition.onresult = function(event) {
                 const last = event.results.length - 1;
                 const transcript = event.results[last][0].transcript.trim().toLowerCase();
-                // log("Heard: " + transcript); // Debugging help
+                log("Heard: " + transcript);
 
-                // Wake Word Logic
+                // Wake Word Logic (Expanded for robustness)
                 if (transcript.includes('spin metrics') || transcript.includes('spinmetrics') || transcript.includes('hey spin')) {
                     activateCommandListening();
                     processCommand(transcript);
@@ -768,7 +779,16 @@
         }
         
         function startVoiceListening() {
-            if (recognition) { try { recognition.start(); } catch(e){} }
+            if (recognition) { 
+                try { 
+                    recognition.start(); 
+                } catch(e) {
+                    // Ignore "already started" errors
+                    if (e.name !== 'InvalidStateError') {
+                        console.error(e);
+                    }
+                } 
+            }
         }
         
         function stopVoiceListening() {
@@ -800,16 +820,28 @@
             const lapBtn = document.getElementById('lapBtn');
             
             if (cmd.includes('start') || cmd.includes('begin')) {
-                if (!startBtn.disabled) startSession();
+                if (!startBtn.disabled) { 
+                    log("Voice Cmd: Start");
+                    startSession();
+                }
             } 
             else if (cmd.includes('stop')) {
-                if (!stopBtn.disabled) stopSession();
+                if (!stopBtn.disabled) {
+                    log("Voice Cmd: Stop");
+                    stopSession();
+                }
             }
-            else if (cmd.includes('pause')) {
-                if (!pauseBtn.disabled) togglePause();
+            else if (cmd.includes('pause') || cmd.includes('resume')) {
+                if (!pauseBtn.disabled) {
+                    log("Voice Cmd: Pause/Resume");
+                    togglePause();
+                }
             }
             else if (cmd.includes('lap')) {
-                if (!lapBtn.disabled) recordLap();
+                if (!lapBtn.disabled) {
+                    log("Voice Cmd: Lap");
+                    recordLap();
+                }
             }
         }
 
