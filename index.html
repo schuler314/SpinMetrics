@@ -1000,6 +1000,9 @@
         }
 
         function log(msg) {
+            const consoleDiv = document.getElementById('consoleLog'); // Fixed: Explicitly get element
+            if (!consoleDiv) return;
+            
             const p = document.createElement('p');
             p.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
             consoleDiv.appendChild(p);
@@ -1024,8 +1027,8 @@
             if (el) {
                 // Hide if 0 or weird value
                 if (!level || level <= 0 || level > 100) {
-                     el.classList.add('hidden');
-                     return;
+                      el.classList.add('hidden');
+                      return;
                 }
                 let icon = 'fa-battery-full';
                 if (level < 20) icon = 'fa-battery-empty text-red-500';
@@ -1167,11 +1170,6 @@
             }
         }
 
-        startBtn.addEventListener('click', startSession);
-        stopBtn.addEventListener('click', stopSession);
-        lapBtn.addEventListener('click', recordLap);
-        pauseBtn.addEventListener('click', togglePause);
-
         function startSession() {
             if (timerInterval) return;
             initAudio();
@@ -1181,7 +1179,8 @@
                 sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
                 lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
                 lapNumber = 0;
-                lapsTableBody.innerHTML = ''; 
+                const lapsTableBody = document.getElementById('lapsTableBody');
+                if(lapsTableBody) lapsTableBody.innerHTML = ''; 
                 resetAvgDisplay();
                 currentSessionLaps = [];
                 startTime = Date.now();
@@ -1191,10 +1190,10 @@
                 totalPausedTime = 0;
             } 
             
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            lapBtn.disabled = false;
-            pauseBtn.disabled = false;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('lapBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = false;
             
             document.getElementById('timerDot').classList.replace('bg-slate-600', 'bg-emerald-500');
             document.getElementById('timerDot').classList.add('pulse-anim');
@@ -1212,6 +1211,7 @@
                 pauseStartTime = null;
                 isPaused = false;
                 timerInterval = setInterval(updateTimers, 1000);
+                const pauseBtn = document.getElementById('pauseBtn');
                 pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
                 pauseBtn.classList.replace('bg-green-600', 'bg-yellow-600');
                 document.getElementById('timerDot').classList.replace('bg-yellow-500', 'bg-emerald-500');
@@ -1225,6 +1225,7 @@
                 timerInterval = null;
                 pauseStartTime = Date.now();
                 isPaused = true;
+                const pauseBtn = document.getElementById('pauseBtn');
                 pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> Resume';
                 pauseBtn.classList.replace('bg-yellow-600', 'bg-green-600');
                 document.getElementById('timerDot').classList.replace('bg-emerald-500', 'bg-yellow-500');
@@ -1267,9 +1268,10 @@
                 currentSessionLaps = [];
             }
 
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            lapBtn.disabled = true;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('lapBtn').disabled = true;
+            const pauseBtn = document.getElementById('pauseBtn');
             pauseBtn.disabled = true;
             pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
             pauseBtn.classList.replace('bg-green-600', 'bg-yellow-600');
@@ -1302,8 +1304,11 @@
                 <td class="px-4 py-3 font-bold text-xs ${lapZone.colorClass}">${lapZone.label}</td>
             `;
             
-            if (lapNumber === 1) lapsTableBody.innerHTML = '';
-            lapsTableBody.insertBefore(row, lapsTableBody.firstChild);
+            const lapsTableBody = document.getElementById('lapsTableBody');
+            if(lapsTableBody) {
+                if (lapNumber === 1) lapsTableBody.innerHTML = '';
+                lapsTableBody.insertBefore(row, lapsTableBody.firstChild);
+            }
             log(`Lap ${lapNumber} Recorded.`);
 
             const lapRecord = {
@@ -1354,6 +1359,9 @@
         }
 
         function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            if(!historyList) return;
+            
             historyList.innerHTML = '';
             if (history.length === 0) {
                 historyList.innerHTML = `<div class="text-center text-slate-600 text-sm mt-10 italic"><p>No past sessions.</p></div>`;
