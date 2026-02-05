@@ -57,7 +57,7 @@
             100% { transform: scale(1); }
         }
         .glow-pulse {
-            filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.8));
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));
             animation: glow-pulse-anim 2s infinite;
         }
         @keyframes glow-pulse-anim {
@@ -155,7 +155,7 @@
     <dialog id="hrZoneInfoModal" class="bg-slate-900 text-white rounded-2xl shadow-2xl p-0 border border-slate-700 w-full max-w-lg overflow-hidden">
         <div class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
             <h3 class="text-xl font-black flex items-center gap-2">
-                <div class="bg-rose-600 p-2 rounded-lg shadow-rose-900/40 shadow-lg">
+                <div class="bg-rose-600 p-1.5 rounded-lg shadow-rose-900/40 shadow-lg">
                     <i class="fa-solid fa-heart-pulse text-white text-base"></i>
                 </div>
                 Your Target Zones
@@ -167,83 +167,83 @@
             </form>
         </div>
         <div class="p-4 space-y-2 bg-slate-900/50" id="hrZoneInfoContent">
-            <!-- Populated by JS - Using larger fonts for zone names -->
+            <!-- Populated by JS -->
         </div>
         <div class="bg-slate-800/80 p-3 text-[11px] text-slate-400 text-center border-t border-slate-800 italic">
             Zones update automatically when you change your Age or Method in Settings.
         </div>
     </dialog>
 
-    <!-- COMPACT Voice Help Modal -->
-    <dialog id="voiceHelpModal" class="bg-slate-900 text-white rounded-2xl shadow-2xl p-0 border border-slate-700 w-full max-w-lg overflow-hidden">
-        <div class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
-            <h3 class="text-lg font-black flex items-center gap-2">
-                <div class="bg-blue-600 p-1.5 rounded-lg shadow-blue-900/40">
-                    <i class="fa-solid fa-microphone-lines text-white text-sm"></i>
+    <!-- LARGE Voice Help Modal -->
+    <dialog id="voiceHelpModal" class="bg-slate-900 text-white rounded-3xl shadow-2xl p-0 border border-slate-700 w-full max-w-xl overflow-hidden">
+        <div class="bg-slate-800 p-5 flex justify-between items-center border-b border-slate-700">
+            <h3 class="text-xl font-black flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg shadow-blue-900/40">
+                    <i class="fa-solid fa-microphone-lines text-white text-base"></i>
                 </div>
                 Voice Control Guide
             </h3>
             <form method="dialog">
-                <button class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-full transition-all active:scale-95">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full transition-all active:scale-95">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </form>
         </div>
         
         <div class="p-6 space-y-6 bg-gradient-to-b from-slate-900 to-slate-950">
             <section>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="bg-emerald-500 text-slate-900 text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0">1</div>
-                    <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-widest">Wake Up</h4>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-emerald-500 text-slate-900 text-xs font-black rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</div>
+                    <h4 class="text-base font-bold text-emerald-400 uppercase tracking-widest">Wake Up</h4>
                 </div>
                 <div class="grid grid-cols-3 gap-3">
-                    <div class="bg-slate-800 p-2 rounded-lg border border-slate-700 text-center shadow-sm">
-                        <span class="text-[10px] text-slate-500 block uppercase font-bold mb-0.5">Full</span>
-                        <span class="text-sm font-bold text-white italic">"Hey SpinMetrics"</span>
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center shadow-sm">
+                        <span class="text-[10px] text-slate-500 block uppercase font-black mb-1">Full</span>
+                        <span class="text-base font-black text-white italic">"Hey SpinMetrics"</span>
                     </div>
-                    <div class="bg-slate-800 p-2 rounded-lg border border-emerald-500/30 text-center shadow-sm">
-                        <span class="text-emerald-500 text-[10px] block uppercase font-bold mb-0.5">High</span>
-                        <span class="text-sm font-bold text-emerald-400 italic">"Hey Metrics"</span>
+                    <div class="bg-slate-800 p-3 rounded-xl border border-emerald-500/30 text-center shadow-sm">
+                        <span class="text-emerald-500 text-[10px] block uppercase font-black mb-1">High</span>
+                        <span class="text-base font-black text-emerald-400 italic">"Hey Metrics"</span>
                     </div>
-                    <div class="bg-slate-800 p-2 rounded-lg border border-slate-700 text-center shadow-sm">
-                        <span class="text-[10px] text-slate-500 block uppercase font-bold mb-0.5">Short</span>
-                        <span class="text-sm font-bold text-white italic">"Hey Spin"</span>
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-center shadow-sm">
+                        <span class="text-[10px] text-slate-500 block uppercase font-black mb-1">Short</span>
+                        <span class="text-base font-black text-white italic">"Hey Spin"</span>
                     </div>
                 </div>
             </section>
 
             <section>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="bg-blue-500 text-slate-900 text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0">2</div>
-                    <h4 class="text-sm font-bold text-blue-400 uppercase tracking-widest">Commands</h4>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-blue-500 text-slate-900 text-xs font-black rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</div>
+                    <h4 class="text-base font-bold text-blue-400 uppercase tracking-widest">Commands</h4>
                 </div>
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
-                        <span class="text-emerald-400 font-bold text-xs">START</span>
-                        <span class="text-slate-300 font-mono text-[11px]">Start, Go, Ride, Begin</span>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                        <span class="text-emerald-400 font-black text-base">START SESSION</span>
+                        <span class="text-slate-100 font-mono font-bold text-base">Start, Go, Ride</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
-                        <span class="text-rose-400 font-bold text-xs">STOP</span>
-                        <span class="text-slate-300 font-mono text-[11px]">Stop, End, Done, Finish</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                        <span class="text-rose-400 font-black text-base">STOP SESSION</span>
+                        <span class="text-slate-100 font-mono font-bold text-base">Stop, End, Done</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
-                        <span class="text-amber-400 font-bold text-xs">PAUSE</span>
-                        <span class="text-slate-300 font-mono text-[11px]">Pause, Resume, Hold</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                        <span class="text-amber-400 font-black text-base">PAUSE / RESUME</span>
+                        <span class="text-slate-100 font-mono font-bold text-base">Pause, Resume</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
-                        <span class="text-blue-400 font-bold text-xs">LAP</span>
-                        <span class="text-slate-300 font-mono text-[11px]">Lap, Next, Mark, Split</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                        <span class="text-blue-400 font-black text-base">RECORD LAP</span>
+                        <span class="text-slate-100 font-mono font-bold text-base">Lap, Next, Mark</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
-                        <span class="text-purple-400 font-bold text-xs">SWITCH</span>
-                        <span class="text-slate-300 font-mono text-[11px]">Switch, Duration, Swap</span>
+                    <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                        <span class="text-purple-400 font-black text-base">SWITCH TIMER</span>
+                        <span class="text-slate-100 font-mono font-bold text-base">Switch, Swap</span>
                     </div>
                 </div>
             </section>
 
-            <div class="bg-blue-600/10 border border-blue-500/20 p-3 rounded-xl flex gap-3">
-                <i class="fa-solid fa-lightbulb text-blue-400 text-sm mt-0.5"></i>
-                <p class="text-blue-100/80 text-[10px] leading-relaxed italic">Click the Mic to disable/enable voice. Recognition is flushed after every action.</p>
+            <div class="bg-blue-600/10 border border-blue-500/20 p-4 rounded-2xl flex gap-4">
+                <i class="fa-solid fa-lightbulb text-blue-400 text-xl mt-0.5"></i>
+                <p class="text-blue-100/80 text-xs leading-relaxed italic">Click Mic to toggle voice. Recognition resets automatically after every command to prevent duplicates.</p>
             </div>
         </div>
     </dialog>
@@ -506,8 +506,8 @@
                 </div>
             </div>
 
-            <!-- Log - Height fixed to h-64 for better visibility -->
-            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-64 overflow-y-auto max-w-[1400px] w-full mx-auto" id="consoleLog">
+            <!-- Log - Height fixed to h-80 for better visibility -->
+            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-80 overflow-y-auto max-w-[1400px] w-full mx-auto shadow-inner" id="consoleLog">
                 <p>> System Ready.</p>
             </div>
             
@@ -587,17 +587,15 @@
                 vs.onclick = (e) => {
                     const active = isVoiceActive();
                     if (active) {
-                        log("Deactivating Microphone...");
+                        log("Deactivating Voice Control...");
                         prefs.voiceEnabled = false;
                         stopVoiceListening();
-                        // Update settings checkbox UI
                         const chk = document.getElementById('settingVoice');
                         if (chk) chk.checked = false;
                         saveSettings();
-                        // Reset visual state
                         vs.className = "text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700";
                     } else {
-                        log("Activating Microphone...");
+                        log("Activating Voice Control...");
                         prefs.voiceEnabled = true;
                         const chk = document.getElementById('settingVoice');
                         if (chk) chk.checked = true;
@@ -768,7 +766,7 @@
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-lg font-black ${z.color}">${z.id}</div>
                         <div>
-                            <div class="text-lg font-black ${z.color} uppercase tracking-tight">${z.name}</div>
+                            <div class="text-2xl font-black ${z.color} uppercase tracking-tight">${z.name}</div>
                             <div class="text-[10px] text-slate-500 font-bold uppercase">${z.range} Capacity</div>
                         </div>
                     </div>
@@ -811,11 +809,13 @@
             zones.forEach(zIdx => {
                 const bar = document.getElementById(`barZ${zIdx}`);
                 const fill = document.getElementById(`fillZ${zIdx}`);
-                const min = zIdx === 1 ? limits[0] : limits[zIdx-2];
-                const max = limits[zIdx-1];
+                const min = zIdx === 1 ? limits[0] : limits[zIdx-1]; // Corrected min lookup
+                const max = limits[zIdx]; // Corrected max lookup
+                
                 let fillPct = 0;
                 if (hr >= max) fillPct = 100;
                 else if (hr > min) fillPct = ((hr - min) / (max - min)) * 100;
+                
                 fill.style.height = `${fillPct}%`;
                 
                 if (currentZone === zIdx) { 
@@ -1058,7 +1058,7 @@
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
-            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
+            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lblData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
             lapNumber++;
             lapOffsetSeconds = elapsedTime; 
@@ -1097,7 +1097,7 @@
             log('Item Deleted');
         }
 
-        function clearHistory() { if(confirm("Delete all history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
+        function clearHistory() { if(confirm("Delete history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
 
         function calculateHrZone(hr) {
             const limits = getZoneLimits();
