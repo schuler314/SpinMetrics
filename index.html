@@ -104,6 +104,9 @@
                 <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset/Toggle)">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
+                <button onclick="showHrZoneInfo()" class="text-slate-500 hover:text-rose-400 transition p-2" title="Heart Rate Zones Info">
+                    <i class="fa-solid fa-heart-pulse text-lg"></i>
+                </button>
                 <button onclick="document.getElementById('voiceHelpModal').showModal()" class="text-slate-500 hover:text-blue-400 transition p-2" title="Voice Commands Help">
                     <i class="fa-solid fa-circle-info text-lg"></i>
                 </button>
@@ -138,6 +141,29 @@
             </button>
         </div>
     </nav>
+
+    <!-- HR Zone Info Modal -->
+    <dialog id="hrZoneInfoModal" class="bg-slate-900 text-white rounded-2xl shadow-2xl p-0 border border-slate-700 w-full max-w-lg overflow-hidden">
+        <div class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
+            <h3 class="text-lg font-black flex items-center gap-2">
+                <div class="bg-rose-600 p-1.5 rounded-lg shadow-rose-900/40 shadow-lg">
+                    <i class="fa-solid fa-heart-pulse text-white text-sm"></i>
+                </div>
+                Your Target Zones
+            </h3>
+            <form method="dialog">
+                <button class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-full transition-all active:scale-95">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </form>
+        </div>
+        <div class="p-6 space-y-4" id="hrZoneInfoContent">
+            <!-- Populated by JS -->
+        </div>
+        <div class="bg-slate-800/50 p-3 text-[10px] text-slate-500 text-center border-t border-slate-800 italic">
+            Calculated based on your Age and Method in Settings.
+        </div>
+    </dialog>
 
     <!-- COMPACT Voice Help Modal -->
     <dialog id="voiceHelpModal" class="bg-slate-900 text-white rounded-2xl shadow-2xl p-0 border border-slate-700 w-full max-w-lg overflow-hidden">
@@ -355,7 +381,6 @@
                         </div>
                     </div>
                     
-                    <!-- HR Zone Bar - Corrected with larger numbers and flex logic -->
                     <div class="w-12 flex flex-col-reverse gap-1 h-full z-10 items-end" id="hrZoneBars">
                         <div class="w-full bg-slate-800 border border-slate-700 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 opacity-30 group" id="barZ1">
                             <div class="absolute inset-0 flex items-center justify-center text-sm font-black text-white/70 z-20">1</div>
@@ -471,7 +496,7 @@
                 </div>
             </div>
 
-            <!-- Log - Height increased -->
+            <!-- Log - Height fixed to h-48 -->
             <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-48 overflow-y-auto max-w-[1400px] w-full mx-auto" id="consoleLog">
                 <p>> System Ready.</p>
             </div>
@@ -550,14 +575,21 @@
             const vs = document.getElementById('voiceStatus');
             if(vs) {
                 vs.onclick = (e) => {
-                    if (isVoiceActive()) {
-                        log("Deactivating Microphone...");
+                    const active = isVoiceActive();
+                    if (active) {
+                        log("Deactivating Voice Control...");
                         prefs.voiceEnabled = false;
                         stopVoiceListening();
+                        const chk = document.getElementById('settingVoice');
+                        if (chk) chk.checked = false;
                         saveSettings();
+                        vs.className = "text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700";
                     } else {
-                        log("Activating Microphone...");
+                        log("Activating Voice Control...");
                         prefs.voiceEnabled = true;
+                        const chk = document.getElementById('settingVoice');
+                        if (chk) chk.checked = true;
+                        saveSettings();
                         if(recognition) {
                             try { recognition.stop(); } catch(err){}
                             isListeningForCommand = false;
@@ -566,7 +598,6 @@
                             initVoiceRecognition();
                             startVoiceListening();
                         }
-                        saveSettings();
                     }
                 };
             }
@@ -615,6 +646,8 @@
                 if (event.error === 'not-allowed') {
                     log("Mic Permission Denied.");
                     prefs.voiceEnabled = false;
+                    const chk = document.getElementById('settingVoice');
+                    if (chk) chk.checked = false;
                     saveSettings();
                 }
             };
@@ -705,6 +738,38 @@
         function stopVoiceListening() { if (recognition) try { recognition.stop(); } catch(e){} }
 
         // --- UI LOGIC ---
+        function showHrZoneInfo() {
+            const limits = getZoneLimits();
+            const modal = document.getElementById('hrZoneInfoModal');
+            const content = document.getElementById('hrZoneInfoContent');
+            
+            const zones = [
+                { id: 1, name: 'Recovery', color: 'text-zone-1', range: `50-60%`, bpm: `${limits[0]}-${limits[1]}` },
+                { id: 2, name: 'Endurance', color: 'text-zone-2', range: `60-70%`, bpm: `${limits[1]}-${limits[2]}` },
+                { id: 3, name: 'Aerobic', color: 'text-zone-3', range: `70-80%`, bpm: `${limits[2]}-${limits[3]}` },
+                { id: 4, name: 'Anaerobic', color: 'text-zone-4', range: `80-90%`, bpm: `${limits[3]}-${limits[4]}` },
+                { id: 5, name: 'Max Effort', color: 'text-zone-5', range: `90-100%`, bpm: `${limits[4]}-${limits[5]}` }
+            ];
+
+            content.innerHTML = zones.map(z => `
+                <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-800 hover:bg-slate-800/60 transition-all">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-lg font-black ${z.color}">${z.id}</div>
+                        <div>
+                            <div class="text-sm font-black ${z.color} uppercase tracking-tight">${z.name}</div>
+                            <div class="text-[10px] text-slate-500 font-bold uppercase">${z.range} Capacity</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-white font-mono">${z.bpm}</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">BPM RANGE</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            modal.showModal();
+        }
+
         function toggleDurationMode() {
             if (displayMode === 'total') {
                 displayMode = 'lap';
@@ -742,7 +807,7 @@
                 fill.style.height = `${fillPct}%`;
                 
                 if (currentZone === zIdx) { 
-                    bar.style.flex = '1.8'; 
+                    bar.style.flex = '2.2'; 
                     bar.classList.add('border-slate-400', 'opacity-100'); 
                     bar.classList.remove('opacity-30');
                 } else if (currentZone > zIdx) {
@@ -760,6 +825,20 @@
         function getZoneLimits() {
             const age = prefs.age;
             let maxHr = (prefs.hrMethod === 'tanaka') ? (208 - (0.7 * age)) : (220 - age);
+            
+            if (prefs.hrMethod === 'karvonen') {
+                const rhr = prefs.restingHr;
+                const hrr = maxHr - rhr;
+                return [
+                    Math.round((hrr * 0.5) + rhr),
+                    Math.round((hrr * 0.6) + rhr),
+                    Math.round((hrr * 0.7) + rhr),
+                    Math.round((hrr * 0.8) + rhr),
+                    Math.round((hrr * 0.9) + rhr),
+                    Math.round(maxHr)
+                ];
+            }
+            
             return [Math.round(maxHr * 0.5), Math.round(maxHr * 0.6), Math.round(maxHr * 0.7), Math.round(maxHr * 0.8), Math.round(maxHr * 0.9), Math.round(maxHr)];
         }
 
@@ -810,7 +889,7 @@
                         char.addEventListener('characteristicvaluechanged', handleBikeData);
                     }
                 }
-            } catch (error) { log('Bike: Connection Error: ' + error.message); }
+            } catch (error) { log('Bike Error: ' + error.message); }
         }
 
         async function connectToHeartRate() {
@@ -834,7 +913,7 @@
                 const char = await service.getCharacteristic(HR_CHAR_UUID);
                 await char.startNotifications();
                 char.addEventListener('characteristicvaluechanged', handleHeartRateData);
-            } catch (error) { log('HR: Connection Error: ' + error.message); }
+            } catch (error) { log('HR Error: ' + error.message); }
         }
 
         function handleBikeData(event) {
