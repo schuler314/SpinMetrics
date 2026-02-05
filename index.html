@@ -155,8 +155,8 @@
     <dialog id="hrZoneInfoModal" class="bg-slate-900 text-white rounded-2xl shadow-2xl p-0 border border-slate-700 w-full max-w-lg overflow-hidden backdrop-click-close">
         <div class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
             <h3 class="text-xl font-black flex items-center gap-2">
-                <div class="bg-rose-600 p-1.5 rounded-lg shadow-rose-900/40 shadow-lg">
-                    <i class="fa-solid fa-heart-pulse text-white text-sm"></i>
+                <div class="bg-rose-600 p-1.5 rounded-lg shadow-rose-900/40 shadow-lg text-white">
+                    <i class="fa-solid fa-heart-pulse"></i>
                 </div>
                 Your Target Zones
             </h3>
@@ -170,7 +170,7 @@
             <!-- Populated dynamically by showHrZoneInfo() -->
         </div>
         <div class="bg-slate-800/80 p-3 text-[11px] text-slate-400 text-center border-t border-slate-800 italic">
-            Zones update automatically based on your Settings.
+            Calculated based on your current Age and Method in Settings.
         </div>
     </dialog>
 
@@ -178,8 +178,8 @@
     <dialog id="voiceHelpModal" class="bg-slate-900 text-white rounded-2xl shadow-2xl p-0 border border-slate-700 w-full max-w-3xl overflow-hidden backdrop-click-close">
         <div class="bg-slate-800 p-5 flex justify-between items-center border-b border-slate-700">
             <h3 class="text-xl font-black flex items-center gap-2">
-                <div class="bg-blue-600 p-1.5 rounded-lg shadow-blue-900/40">
-                    <i class="fa-solid fa-comment-dots text-white text-sm"></i>
+                <div class="bg-blue-600 p-1.5 rounded-lg shadow-blue-900/40 text-white">
+                    <i class="fa-solid fa-comment-dots"></i>
                 </div>
                 Voice Control Guide
             </h3>
@@ -220,27 +220,27 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-emerald-400 font-black text-xl">START</span>
-                        <span class="text-slate-100 font-mono font-bold text-lg">Start, Go, Ride</span>
+                        <span class="text-slate-100 font-mono font-bold text-xl">Start, Go, Ride</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-rose-400 font-black text-xl">STOP</span>
-                        <span class="text-slate-100 font-mono font-bold text-lg">Stop, End, Done</span>
+                        <span class="text-slate-100 font-mono font-bold text-xl">Stop, End, Done</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-700 group">
                         <span class="text-amber-400 font-black text-xl">PAUSE</span>
-                        <span class="text-slate-100 font-mono font-bold text-lg">Pause, Resume</span>
+                        <span class="text-slate-100 font-mono font-bold text-xl">Pause, Resume</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-blue-400 font-black text-xl">LAP</span>
-                        <span class="text-slate-100 font-mono font-bold text-lg">Lap, Next, Mark</span>
+                        <span class="text-slate-100 font-mono font-bold text-xl">Lap, Next, Mark</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-purple-400 font-black text-xl">SWITCH</span>
-                        <span class="text-slate-100 font-mono font-bold text-lg">Switch, Swap</span>
+                        <span class="text-slate-100 font-mono font-bold text-xl">Switch, Swap</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-slate-400 font-black text-xl">CANCEL</span>
-                        <span class="text-slate-100 font-mono font-bold text-lg">Cancel</span>
+                        <span class="text-slate-100 font-mono font-bold text-xl">Cancel</span>
                     </div>
                 </div>
             </section>
@@ -279,6 +279,7 @@
                 </select>
             </div>
 
+            <!-- Resting Heart Rate Field -->
             <div id="rhrInputContainer" class="hidden transition-all">
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Resting Heart Rate (RHR)</label>
                 <div class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-slate-700">
@@ -1144,13 +1145,18 @@
         function loadSettings() {
             const s = localStorage.getItem('spinMetrics_prefs');
             if (s) prefs = { ...prefs, ...JSON.parse(s) };
+            
+            // First update the DOM values from prefs
             document.getElementById('settingAge').value = prefs.age;
             document.getElementById('settingHrMethod').value = prefs.hrMethod;
             document.getElementById('settingRhr').value = prefs.restingHr;
             document.getElementById('settingAudio').checked = prefs.audioEnabled;
             document.getElementById('settingVoice').checked = prefs.voiceEnabled;
+            
             const h = localStorage.getItem('spinMetrics_history');
             if (h) { history = JSON.parse(h); renderHistory(); }
+            
+            // Now refresh UI based on updated method
             toggleRhrInput();
         }
 
@@ -1161,7 +1167,7 @@
             log('Item Deleted');
         }
 
-        function clearHistory() { if(confirm("Delete history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
+        function clearHistory() { if(confirm("Delete all history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
 
         function calculateHrZone(hr) {
             const limits = getZoneLimits();
@@ -1236,7 +1242,13 @@
         async function releaseWakeLock() { if (wakeLock) { await wakeLock.release(); wakeLock = null; } }
         function toggleFullScreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
         function toggleTargetInput() { document.getElementById('targetRpmInputContainer').classList.toggle('hidden', !document.getElementById('settingTargetRpmEnabled').checked); }
-        function toggleRhrInput() { document.getElementById('rhrInputContainer').classList.toggle('hidden', document.getElementById('settingHrMethod').value !== 'karvonen'); }
+        
+        function toggleRhrInput() { 
+            const container = document.getElementById('rhrInputContainer');
+            const currentMethod = document.getElementById('settingHrMethod').value;
+            container.classList.toggle('hidden', currentMethod !== 'karvonen'); 
+        }
+
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function playAudioCue(t) { if (!audioCtx) return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); g.gain.setValueAtTime(0.05, audioCtx.currentTime); o.start(); o.stop(audioCtx.currentTime + 0.1); }
         function toggleVoiceControl() { if (prefs.voiceEnabled) startVoiceListening(); else stopVoiceListening(); }
