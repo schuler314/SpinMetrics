@@ -167,10 +167,10 @@
             </form>
         </div>
         <div class="p-4 space-y-2 bg-slate-900/50" id="hrZoneInfoContent">
-            <!-- Populated by JS -->
+            <!-- Populated dynamically by showHrZoneInfo() -->
         </div>
         <div class="bg-slate-800/80 p-3 text-[11px] text-slate-400 text-center border-t border-slate-800 italic">
-            Zones update automatically when you change your Age or Method in Settings.
+            Zones update automatically based on your Settings.
         </div>
     </dialog>
 
@@ -217,31 +217,30 @@
                     <div class="bg-blue-500 text-slate-900 text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center shrink-0">2</div>
                     <h4 class="text-sm font-bold text-blue-400 uppercase tracking-widest">Actions</h4>
                 </div>
-                <!-- 2-Column Action Grid with LARGER font size for command labels -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-emerald-400 font-black text-xl">START</span>
-                        <span class="text-slate-100 font-mono font-bold text-sm">Start, Go, Ride</span>
+                        <span class="text-slate-100 font-mono font-bold text-lg">Start, Go, Ride</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-rose-400 font-black text-xl">STOP</span>
-                        <span class="text-slate-100 font-mono font-bold text-sm">Stop, End, Done</span>
+                        <span class="text-slate-100 font-mono font-bold text-lg">Stop, End, Done</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-700 group">
                         <span class="text-amber-400 font-black text-xl">PAUSE</span>
-                        <span class="text-slate-100 font-mono font-bold text-sm">Pause, Resume</span>
+                        <span class="text-slate-100 font-mono font-bold text-lg">Pause, Resume</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-blue-400 font-black text-xl">LAP</span>
-                        <span class="text-slate-100 font-mono font-bold text-sm">Lap, Next, Mark</span>
+                        <span class="text-slate-100 font-mono font-bold text-lg">Lap, Next, Mark</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-purple-400 font-black text-xl">SWITCH</span>
-                        <span class="text-slate-100 font-mono font-bold text-sm">Switch, Swap</span>
+                        <span class="text-slate-100 font-mono font-bold text-lg">Switch, Swap</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 group">
                         <span class="text-slate-400 font-black text-xl">CANCEL</span>
-                        <span class="text-slate-100 font-mono font-bold text-sm">Cancel</span>
+                        <span class="text-slate-100 font-mono font-bold text-lg">Cancel</span>
                     </div>
                 </div>
             </section>
@@ -253,8 +252,8 @@
         </div>
     </dialog>
 
-    <!-- Settings Modal -->
-    <dialog id="settingsModal" class="bg-slate-800 text-white rounded-xl shadow-2xl p-6 border border-slate-600 w-full max-sm:max-w-full backdrop-click-close">
+    <!-- Narrower Settings Modal -->
+    <dialog id="settingsModal" class="bg-slate-800 text-white rounded-xl shadow-2xl p-6 border border-slate-600 w-full max-w-sm backdrop-click-close">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-sliders mr-2"></i> Settings</h3>
             <form method="dialog">
@@ -846,13 +845,16 @@
                 bar.classList.remove('opacity-100', 'opacity-80', 'opacity-30', 'border-slate-400');
                 
                 if (currentZone === zIdx) { 
-                    bar.style.flex = '2.5'; 
+                    bar.style.flex = '2.2'; 
                     bar.classList.add('border-slate-400', 'opacity-100'); 
+                    bar.classList.remove('opacity-30');
                 } else if (currentZone > zIdx) {
                     bar.style.flex = '1';
+                    bar.classList.remove('border-slate-400', 'opacity-30');
                     bar.classList.add('opacity-80');
                 } else {
                     bar.style.flex = '1';
+                    bar.classList.remove('border-slate-400', 'opacity-100');
                     bar.classList.add('opacity-30');
                 }
             });
@@ -1159,10 +1161,11 @@
             log('Item Deleted');
         }
 
-        function clearHistory() { if(confirm("Delete all history recorded on this device?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
+        function clearHistory() { if(confirm("Delete history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
 
         function calculateHrZone(hr) {
             const limits = getZoneLimits();
+            if (hr >= limits[5]) return { zone: 5, label: 'Zone 5', colorClass: 'text-zone-5' };
             if (hr >= limits[4]) return { zone: 5, label: 'Zone 5', colorClass: 'text-zone-5' };
             if (hr >= limits[3]) return { zone: 4, label: 'Zone 4', colorClass: 'text-zone-4' };
             if (hr >= limits[2]) return { zone: 3, label: 'Zone 3', colorClass: 'text-zone-3' };
