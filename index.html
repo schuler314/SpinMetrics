@@ -101,7 +101,7 @@
         <div class="flex items-center gap-3 md:gap-4">
             <!-- Voice Indicator Group -->
             <div class="flex items-center gap-1 bg-slate-900/50 p-1 rounded-full border border-slate-800">
-                <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset)">
+                <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset/Toggle)">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
                 <button onclick="document.getElementById('voiceHelpModal').showModal()" class="text-slate-500 hover:text-blue-400 transition p-2" title="Voice Commands Help">
@@ -183,23 +183,23 @@
                     <h4 class="text-sm font-bold text-blue-400 uppercase tracking-widest">Commands</h4>
                 </div>
                 <div class="space-y-2">
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
                         <span class="text-emerald-400 font-bold text-xs">START</span>
                         <span class="text-slate-300 font-mono text-[11px]">Start, Go, Ride, Begin</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
                         <span class="text-rose-400 font-bold text-xs">STOP</span>
                         <span class="text-slate-300 font-mono text-[11px]">Stop, End, Done, Finish</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
                         <span class="text-amber-400 font-bold text-xs">PAUSE</span>
                         <span class="text-slate-300 font-mono text-[11px]">Pause, Resume, Hold</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
                         <span class="text-blue-400 font-bold text-xs">LAP</span>
                         <span class="text-slate-300 font-mono text-[11px]">Lap, Next, Mark, Split</span>
                     </div>
-                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+                    <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-lg border border-slate-700">
                         <span class="text-purple-400 font-bold text-xs">SWITCH</span>
                         <span class="text-slate-300 font-mono text-[11px]">Switch, Duration, Swap</span>
                     </div>
@@ -208,7 +208,7 @@
 
             <div class="bg-blue-600/10 border border-blue-500/20 p-3 rounded-xl flex gap-3">
                 <i class="fa-solid fa-lightbulb text-blue-400 text-sm mt-0.5"></i>
-                <p class="text-blue-100/80 text-[10px] leading-relaxed italic">System ignores double commands for 2 seconds after each action. Flushing active.</p>
+                <p class="text-blue-100/80 text-[10px] leading-relaxed italic">Click the Mic to disable/enable voice. Recognition is flushed after every action.</p>
             </div>
         </div>
     </dialog>
@@ -471,14 +471,14 @@
                 </div>
             </div>
 
-            <!-- Log -->
-            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-24 overflow-y-auto max-w-[1400px] w-full mx-auto" id="consoleLog">
+            <!-- Log - Height increased -->
+            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-48 overflow-y-auto max-w-[1400px] w-full mx-auto" id="consoleLog">
                 <p>> System Ready.</p>
             </div>
             
             <div class="h-8 md:hidden"></div>
         </div>
-    </nav>
+    </main>
 
     <script>
         // --- CONSTANTS ---
@@ -550,35 +550,27 @@
             const vs = document.getElementById('voiceStatus');
             if(vs) {
                 vs.onclick = (e) => {
-                    log("Manual Voice Reset");
-                    if(recognition) {
-                        try { recognition.stop(); } catch(err){}
-                        isListeningForCommand = false;
-                        setTimeout(() => startVoiceListening(), 100);
+                    if (isVoiceActive()) {
+                        log("Deactivating Microphone...");
+                        prefs.voiceEnabled = false;
+                        stopVoiceListening();
+                        saveSettings();
                     } else {
-                        initVoiceRecognition();
-                        startVoiceListening();
+                        log("Activating Microphone...");
+                        prefs.voiceEnabled = true;
+                        if(recognition) {
+                            try { recognition.stop(); } catch(err){}
+                            isListeningForCommand = false;
+                            setTimeout(() => startVoiceListening(), 100);
+                        } else {
+                            initVoiceRecognition();
+                            startVoiceListening();
+                        }
+                        saveSettings();
                     }
                 };
             }
             
-            const elements = ['settingAge', 'settingHrMethod', 'settingRhr', 'settingAudio', 'settingVoice', 'settingTargetRpmEnabled', 'settingTargetRpmValue'];
-            elements.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    if (el.type === 'checkbox') el.addEventListener('change', () => { 
-                        if(id === 'settingVoice') toggleVoiceControl(); 
-                        else if(id === 'settingTargetRpmEnabled') { saveSettings(); toggleTargetInput(); } 
-                        else saveSettings(); 
-                    });
-                    else if (el.tagName === 'SELECT') el.addEventListener('change', () => { 
-                        if(id === 'settingHrMethod') toggleRhrInput(); 
-                        saveSettings(); 
-                    });
-                    else el.addEventListener('change', saveSettings);
-                }
-            });
-
             loadSettings();
 
             if (window.innerWidth < 768) setView('mobile');
@@ -593,6 +585,11 @@
             };
             document.addEventListener('click', enableVoiceOnInteraction);
         });
+
+        function isVoiceActive() {
+            const vs = document.getElementById('voiceStatus');
+            return vs && (vs.classList.contains('text-blue-500') || vs.classList.contains('text-rose-500'));
+        }
 
         // --- SPEECH API ---
         function initVoiceRecognition() {
@@ -646,6 +643,9 @@
             recognition.onend = () => {
                 if (prefs.voiceEnabled) {
                     setTimeout(() => { if (prefs.voiceEnabled) try { recognition.start(); } catch(e){} }, 400);
+                } else {
+                    const vs = document.getElementById('voiceStatus');
+                    if (vs) vs.className = "text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700";
                 }
             };
         }
@@ -659,7 +659,7 @@
             commandTimeout = setTimeout(() => {
                 isListeningForCommand = false;
                 const vs = document.getElementById('voiceStatus');
-                if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+                if (vs && prefs.voiceEnabled) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
             }, 6000); 
         }
 
@@ -696,7 +696,7 @@
                     isListeningForCommand = false;
                     try { recognition.stop(); } catch(e){}
                     const vs = document.getElementById('voiceStatus');
-                    if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
+                    if (vs && prefs.voiceEnabled) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
                 }
             }
         }
@@ -741,22 +741,18 @@
                 else if (hr > min) fillPct = ((hr - min) / (max - min)) * 100;
                 fill.style.height = `${fillPct}%`;
                 
-                // Enhanced Interactive Logic
                 if (currentZone === zIdx) { 
                     bar.style.flex = '1.8'; 
-                    bar.classList.add('border-slate-400'); 
+                    bar.classList.add('border-slate-400', 'opacity-100'); 
                     bar.classList.remove('opacity-30');
-                    bar.classList.add('opacity-100');
                 } else if (currentZone > zIdx) {
                     bar.style.flex = '1';
-                    bar.classList.remove('border-slate-400');
+                    bar.classList.remove('border-slate-400', 'opacity-30');
                     bar.classList.add('opacity-80');
-                    bar.classList.remove('opacity-30');
                 } else {
                     bar.style.flex = '1';
-                    bar.classList.remove('border-slate-400');
+                    bar.classList.remove('border-slate-400', 'opacity-100');
                     bar.classList.add('opacity-30');
-                    bar.classList.remove('opacity-100');
                 }
             });
         }
@@ -774,14 +770,12 @@
             const grid = document.getElementById('dashboardGrid');
             const btm = document.getElementById('bottomGrid');
             if (mode === 'mobile') {
-                viewIcon.className = 'fa-solid fa-mobile-screen';
-                viewText.innerText = 'Mobile';
+                viewIcon.className = 'fa-solid fa-mobile-screen'; viewText.innerText = 'Mobile';
                 grid.className = "grid grid-cols-2 gap-2 max-w-[1400px] w-full mx-auto transition-all";
                 btm.className = "grid grid-cols-1 gap-4 max-w-[1400px] w-full mx-auto transition-all";
                 document.querySelectorAll('.stat-card span.text-5xl, .stat-card span.text-6xl').forEach(el => el.classList.replace('text-6xl', 'text-4xl'));
             } else {
-                viewIcon.className = 'fa-solid fa-desktop';
-                viewText.innerText = 'Desktop';
+                viewIcon.className = 'fa-solid fa-desktop'; viewText.innerText = 'Desktop';
                 grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all";
                 btm.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] w-full mx-auto transition-all";
                 document.querySelectorAll('.stat-card span.text-4xl').forEach(el => {
@@ -794,16 +788,18 @@
         async function connectToBike() {
             try {
                 log('Connecting to Bike...');
-                bikeDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: [BIKE_UUID] }], optionalServices: [BIKE_UUID, BATTERY_SERVICE_UUID] });
+                bikeDevice = await navigator.bluetooth.requestDevice({ 
+                    filters: [{ services: [BIKE_UUID] }], 
+                    optionalServices: [BIKE_UUID, BATTERY_SERVICE_UUID] 
+                });
                 const server = await bikeDevice.gatt.connect();
-                document.getElementById('bikeDot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+                document.getElementById('bikeDot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]";
                 log('Bike Connected');
                 
-                // Visual Update for Connected State
                 const btn = document.getElementById('connectBtn');
                 btn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-900/20');
                 btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
-                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400"></i><span class="text-slate-200">Bike Connected</span>';
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200">Bike Connected</span>';
 
                 setupBattery(server, 'bike');
                 const service = await server.getPrimaryService(BIKE_UUID);
@@ -814,29 +810,31 @@
                         char.addEventListener('characteristicvaluechanged', handleBikeData);
                     }
                 }
-            } catch (error) { log('Bike: ' + error.message); }
+            } catch (error) { log('Bike: Connection Error: ' + error.message); }
         }
 
         async function connectToHeartRate() {
             try {
                 log('Connecting to HR...');
-                hrDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: [HR_SERVICE_UUID] }], optionalServices: [BATTERY_SERVICE_UUID] });
+                hrDevice = await navigator.bluetooth.requestDevice({ 
+                    filters: [{ services: [HR_SERVICE_UUID] }], 
+                    optionalServices: [BATTERY_SERVICE_UUID] 
+                });
                 const server = await hrDevice.gatt.connect();
-                document.getElementById('hrDot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+                document.getElementById('hrDot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]";
                 log('HR Connected');
                 
-                // Visual Update for Connected State
                 const btn = document.getElementById('connectHrBtn');
                 btn.classList.remove('bg-rose-600', 'hover:bg-rose-500', 'shadow-rose-900/20');
                 btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
-                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400"></i><span class="text-slate-200">HR Connected</span>';
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200">HR Connected</span>';
 
                 setupBattery(server, 'hr');
                 const service = await server.getPrimaryService(HR_SERVICE_UUID);
                 const char = await service.getCharacteristic(HR_CHAR_UUID);
                 await char.startNotifications();
                 char.addEventListener('characteristicvaluechanged', handleHeartRateData);
-            } catch (error) { log('HR: ' + error.message); }
+            } catch (error) { log('HR: Connection Error: ' + error.message); }
         }
 
         function handleBikeData(event) {
@@ -1008,7 +1006,7 @@
             log('Item Deleted');
         }
 
-        function clearHistory() { if(confirm("Delete all history recorded on this device?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
+        function clearHistory() { if(confirm("Delete history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
 
         function calculateHrZone(hr) {
             const limits = getZoneLimits();
