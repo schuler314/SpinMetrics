@@ -12,7 +12,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         body {
@@ -55,6 +55,15 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
+        }
+        .glow-pulse {
+            filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.8));
+            animation: glow-pulse-anim 2s infinite;
+        }
+        @keyframes glow-pulse-anim {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
         }
 
         /* Custom Scrollbar */
@@ -100,8 +109,8 @@
 
         <div class="flex items-center gap-3 md:gap-4">
             <!-- Voice Indicator Group -->
-            <div class="flex items-center gap-1 bg-slate-900/50 p-1 rounded-full border border-slate-800">
-                <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Reset/Toggle)">
+            <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-full border border-slate-800">
+                <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Disable/Enable)">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
                 <button onclick="showHrZoneInfo()" class="text-slate-500 hover:text-rose-400 transition p-2" title="Heart Rate Zones Info">
@@ -145,9 +154,9 @@
     <!-- HR Zone Info Modal -->
     <dialog id="hrZoneInfoModal" class="bg-slate-900 text-white rounded-2xl shadow-2xl p-0 border border-slate-700 w-full max-w-lg overflow-hidden">
         <div class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
-            <h3 class="text-lg font-black flex items-center gap-2">
-                <div class="bg-rose-600 p-1.5 rounded-lg shadow-rose-900/40 shadow-lg">
-                    <i class="fa-solid fa-heart-pulse text-white text-sm"></i>
+            <h3 class="text-xl font-black flex items-center gap-2">
+                <div class="bg-rose-600 p-2 rounded-lg shadow-rose-900/40 shadow-lg">
+                    <i class="fa-solid fa-heart-pulse text-white text-base"></i>
                 </div>
                 Your Target Zones
             </h3>
@@ -157,11 +166,11 @@
                 </button>
             </form>
         </div>
-        <div class="p-6 space-y-4" id="hrZoneInfoContent">
-            <!-- Populated by JS -->
+        <div class="p-4 space-y-2 bg-slate-900/50" id="hrZoneInfoContent">
+            <!-- Populated by JS - Using larger fonts for zone names -->
         </div>
-        <div class="bg-slate-800/50 p-3 text-[10px] text-slate-500 text-center border-t border-slate-800 italic">
-            Calculated based on your Age and Method in Settings.
+        <div class="bg-slate-800/80 p-3 text-[11px] text-slate-400 text-center border-t border-slate-800 italic">
+            Zones update automatically when you change your Age or Method in Settings.
         </div>
     </dialog>
 
@@ -172,7 +181,7 @@
                 <div class="bg-blue-600 p-1.5 rounded-lg shadow-blue-900/40">
                     <i class="fa-solid fa-microphone-lines text-white text-sm"></i>
                 </div>
-                Voice Control
+                Voice Control Guide
             </h3>
             <form method="dialog">
                 <button class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-full transition-all active:scale-95">
@@ -381,6 +390,7 @@
                         </div>
                     </div>
                     
+                    <!-- HR Zone Bar - Corrected with larger numbers and flex logic -->
                     <div class="w-12 flex flex-col-reverse gap-1 h-full z-10 items-end" id="hrZoneBars">
                         <div class="w-full bg-slate-800 border border-slate-700 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 opacity-30 group" id="barZ1">
                             <div class="absolute inset-0 flex items-center justify-center text-sm font-black text-white/70 z-20">1</div>
@@ -496,8 +506,8 @@
                 </div>
             </div>
 
-            <!-- Log - Height fixed to h-48 -->
-            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-48 overflow-y-auto max-w-[1400px] w-full mx-auto" id="consoleLog">
+            <!-- Log - Height fixed to h-64 for better visibility -->
+            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-64 overflow-y-auto max-w-[1400px] w-full mx-auto" id="consoleLog">
                 <p>> System Ready.</p>
             </div>
             
@@ -577,15 +587,17 @@
                 vs.onclick = (e) => {
                     const active = isVoiceActive();
                     if (active) {
-                        log("Deactivating Voice Control...");
+                        log("Deactivating Microphone...");
                         prefs.voiceEnabled = false;
                         stopVoiceListening();
+                        // Update settings checkbox UI
                         const chk = document.getElementById('settingVoice');
                         if (chk) chk.checked = false;
                         saveSettings();
+                        // Reset visual state
                         vs.className = "text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700";
                     } else {
-                        log("Activating Voice Control...");
+                        log("Activating Microphone...");
                         prefs.voiceEnabled = true;
                         const chk = document.getElementById('settingVoice');
                         if (chk) chk.checked = true;
@@ -756,7 +768,7 @@
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-lg font-black ${z.color}">${z.id}</div>
                         <div>
-                            <div class="text-sm font-black ${z.color} uppercase tracking-tight">${z.name}</div>
+                            <div class="text-lg font-black ${z.color} uppercase tracking-tight">${z.name}</div>
                             <div class="text-[10px] text-slate-500 font-bold uppercase">${z.range} Capacity</div>
                         </div>
                     </div>
@@ -1085,7 +1097,7 @@
             log('Item Deleted');
         }
 
-        function clearHistory() { if(confirm("Delete history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
+        function clearHistory() { if(confirm("Delete all history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
 
         function calculateHrZone(hr) {
             const limits = getZoneLimits();
