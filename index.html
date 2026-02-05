@@ -171,7 +171,7 @@
                         <span class="text-sm font-bold text-emerald-400 italic">"Hey Metrics"</span>
                     </div>
                     <div class="bg-slate-800 p-2 rounded-lg border border-slate-700 text-center shadow-sm">
-                        <span class="text-slate-500 text-[10px] block uppercase font-bold mb-0.5">Short</span>
+                        <span class="text-[10px] text-slate-500 block uppercase font-bold mb-0.5">Short</span>
                         <span class="text-sm font-bold text-white italic">"Hey Spin"</span>
                     </div>
                 </div>
@@ -355,26 +355,27 @@
                         </div>
                     </div>
                     
+                    <!-- HR Zone Bar - Corrected with larger numbers and flex logic -->
                     <div class="w-12 flex flex-col-reverse gap-1 h-full z-10 items-end" id="hrZoneBars">
-                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ1">
-                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">1</div>
-                            <div class="absolute bottom-0 left-0 w-full bg-slate-400 transition-all duration-300 h-0 opacity-50" id="fillZ1"></div>
+                        <div class="w-full bg-slate-800 border border-slate-700 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 opacity-30 group" id="barZ1">
+                            <div class="absolute inset-0 flex items-center justify-center text-sm font-black text-white/70 z-20">1</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-slate-400 transition-all duration-300 h-0" id="fillZ1"></div>
                         </div>
-                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ2">
-                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">2</div>
-                            <div class="absolute bottom-0 left-0 w-full bg-blue-500 transition-all duration-300 h-0 opacity-50" id="fillZ2"></div>
+                        <div class="w-full bg-slate-800 border border-slate-700 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 opacity-30 group" id="barZ2">
+                            <div class="absolute inset-0 flex items-center justify-center text-sm font-black text-white/70 z-20">2</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-blue-500 transition-all duration-300 h-0" id="fillZ2"></div>
                         </div>
-                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ3">
-                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">3</div>
-                            <div class="absolute bottom-0 left-0 w-full bg-emerald-500 transition-all duration-300 h-0 opacity-50" id="fillZ3"></div>
+                        <div class="w-full bg-slate-800 border border-slate-700 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 opacity-30 group" id="barZ3">
+                            <div class="absolute inset-0 flex items-center justify-center text-sm font-black text-white/70 z-20">3</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-emerald-500 transition-all duration-300 h-0" id="fillZ3"></div>
                         </div>
-                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ4">
-                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">4</div>
-                            <div class="absolute bottom-0 left-0 w-full bg-amber-500 transition-all duration-300 h-0 opacity-50" id="fillZ4"></div>
+                        <div class="w-full bg-slate-800 border border-slate-700 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 opacity-30 group" id="barZ4">
+                            <div class="absolute inset-0 flex items-center justify-center text-sm font-black text-white/70 z-20">4</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-amber-500 transition-all duration-300 h-0" id="fillZ4"></div>
                         </div>
-                        <div class="w-3/4 bg-slate-800 border border-slate-600 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 group" id="barZ5">
-                            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/50 z-20">5</div>
-                            <div class="absolute bottom-0 left-0 w-full bg-rose-600 transition-all duration-300 h-0 opacity-50" id="fillZ5"></div>
+                        <div class="w-full bg-slate-800 border border-slate-700 rounded-sm relative overflow-hidden flex-1 transition-all duration-300 opacity-30 group" id="barZ5">
+                            <div class="absolute inset-0 flex items-center justify-center text-sm font-black text-white/70 z-20">5</div>
+                            <div class="absolute bottom-0 left-0 w-full bg-rose-600 transition-all duration-300 h-0" id="fillZ5"></div>
                         </div>
                     </div>
                 </div>
@@ -477,7 +478,7 @@
             
             <div class="h-8 md:hidden"></div>
         </div>
-    </main>
+    </nav>
 
     <script>
         // --- CONSTANTS ---
@@ -629,7 +630,6 @@
                 const cmd = fullBuffer.trim().toLowerCase();
                 if (!cmd) return;
 
-                // Wake words: Increased sensitivity for distance
                 const wakeWords = ['spin metrics', 'spinmetrics', 'hey spin', 'spin bike', 'hey metrics', 'hey metric', 'metrics', 'spin'];
                 const matchedWake = wakeWords.some(w => cmd.includes(w));
 
@@ -677,7 +677,6 @@
 
             let commandFound = null;
 
-            // Prioritize newer matches in the buffer to prevent blocking
             if (triggers.switch.some(t => cmd.includes(t))) commandFound = 'switch';
             else if (triggers.lap.some(t => cmd.includes(t))) commandFound = 'lap';
             else if (triggers.pause.some(t => cmd.includes(t))) commandFound = 'pause';
@@ -689,13 +688,12 @@
                 if (commandFound === 'switch') { log("Voice: SWITCH"); toggleDurationMode(); executed = true; }
                 if (commandFound === 'start' && !document.getElementById('startBtn').disabled) { log("Voice: START"); startSession(); executed = true; }
                 if (commandFound === 'stop' && !document.getElementById('stopBtn').disabled) { log("Voice: STOP"); stopSession(); executed = true; }
-                if (commandFound === 'pause' && !document.getElementById('pauseBtn').disabled) { log("Voice: PAUSE"); togglePause(); executed = true; }
+                if (commandFound === 'pause' && !document.getElementById('pauseBtn').disabled) { log("Voice: PAUSE/RESUME"); togglePause(); executed = true; }
                 if (commandFound === 'lap' && !document.getElementById('lapBtn').disabled) { log("Voice: LAP"); recordLap(); executed = true; }
 
                 if (executed) {
                     lastCommandProcessedTime = now;
                     isListeningForCommand = false;
-                    // FLUSH BUFFER: Restart recognition to prevent repeating old commands
                     try { recognition.stop(); } catch(e){}
                     const vs = document.getElementById('voiceStatus');
                     if (vs) vs.className = "text-blue-500 hover:text-blue-400 transition p-2 rounded-full border border-blue-500/50 mic-listening";
@@ -742,8 +740,24 @@
                 if (hr >= max) fillPct = 100;
                 else if (hr > min) fillPct = ((hr - min) / (max - min)) * 100;
                 fill.style.height = `${fillPct}%`;
-                if (currentZone === zIdx) { bar.style.flex = '1.8'; bar.classList.add('border-slate-400'); bar.classList.remove('opacity-30'); } 
-                else { bar.style.flex = '1'; bar.classList.remove('border-slate-400'); bar.classList.add('opacity-30'); }
+                
+                // Enhanced Interactive Logic
+                if (currentZone === zIdx) { 
+                    bar.style.flex = '1.8'; 
+                    bar.classList.add('border-slate-400'); 
+                    bar.classList.remove('opacity-30');
+                    bar.classList.add('opacity-100');
+                } else if (currentZone > zIdx) {
+                    bar.style.flex = '1';
+                    bar.classList.remove('border-slate-400');
+                    bar.classList.add('opacity-80');
+                    bar.classList.remove('opacity-30');
+                } else {
+                    bar.style.flex = '1';
+                    bar.classList.remove('border-slate-400');
+                    bar.classList.add('opacity-30');
+                    bar.classList.remove('opacity-100');
+                }
             });
         }
 
@@ -776,14 +790,21 @@
             }
         }
 
-        // --- BLUETOOTH ---
+        // --- BLUETOOTH & BUTTON FIXES ---
         async function connectToBike() {
             try {
                 log('Connecting to Bike...');
                 bikeDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: [BIKE_UUID] }], optionalServices: [BIKE_UUID, BATTERY_SERVICE_UUID] });
                 const server = await bikeDevice.gatt.connect();
-                document.getElementById('bikeDot').className = "w-2 h-2 rounded-full bg-emerald-500";
+                document.getElementById('bikeDot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
                 log('Bike Connected');
+                
+                // Visual Update for Connected State
+                const btn = document.getElementById('connectBtn');
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-900/20');
+                btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400"></i><span class="text-slate-200">Bike Connected</span>';
+
                 setupBattery(server, 'bike');
                 const service = await server.getPrimaryService(BIKE_UUID);
                 const characteristics = await service.getCharacteristics();
@@ -801,8 +822,15 @@
                 log('Connecting to HR...');
                 hrDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: [HR_SERVICE_UUID] }], optionalServices: [BATTERY_SERVICE_UUID] });
                 const server = await hrDevice.gatt.connect();
-                document.getElementById('hrDot').className = "w-2 h-2 rounded-full bg-emerald-500";
+                document.getElementById('hrDot').className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
                 log('HR Connected');
+                
+                // Visual Update for Connected State
+                const btn = document.getElementById('connectHrBtn');
+                btn.classList.remove('bg-rose-600', 'hover:bg-rose-500', 'shadow-rose-900/20');
+                btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400"></i><span class="text-slate-200">HR Connected</span>';
+
                 setupBattery(server, 'hr');
                 const service = await server.getPrimaryService(HR_SERVICE_UUID);
                 const char = await service.getCharacteristic(HR_CHAR_UUID);
@@ -862,7 +890,7 @@
             } catch(e) {}
         }
 
-        // --- SESSION ---
+        // --- SESSION LOGIC ---
         function startSession() {
             if (timerInterval) return;
             initAudio();
@@ -941,7 +969,7 @@
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
-            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
+            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
             lapNumber++;
             lapOffsetSeconds = elapsedTime; 
@@ -949,7 +977,7 @@
             log('Lap Recorded');
         }
 
-        // --- UTILS ---
+        // --- PREFERENCES & UTILS ---
         function saveSettings() {
             prefs.age = parseInt(document.getElementById('settingAge').value) || 40;
             prefs.hrMethod = document.getElementById('settingHrMethod').value;
@@ -980,7 +1008,7 @@
             log('Item Deleted');
         }
 
-        function clearHistory() { if(confirm("Delete all history?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
+        function clearHistory() { if(confirm("Delete all history recorded on this device?")) { history = []; localStorage.removeItem('spinMetrics_history'); renderHistory(); } }
 
         function calculateHrZone(hr) {
             const limits = getZoneLimits();
