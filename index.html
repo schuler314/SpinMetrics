@@ -108,16 +108,16 @@
         </div>
 
         <div class="flex items-center gap-3 md:gap-4">
-            <!-- Voice Indicator Group -->
+            <!-- Voice Indicator Group - Reordered icons -->
             <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-full border border-slate-800">
                 <button id="voiceStatus" class="text-slate-600 hover:text-white transition p-2 rounded-full border border-transparent hover:border-slate-700" title="Voice Control (Click to Disable/Enable)">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
+                <button onclick="document.getElementById('voiceHelpModal').showModal()" class="text-slate-500 hover:text-blue-400 transition p-2" title="Voice Commands Help">
+                    <i class="fa-solid fa-comment-dots text-lg"></i>
+                </button>
                 <button onclick="showHrZoneInfo()" class="text-slate-500 hover:text-rose-400 transition p-2" title="Heart Rate Zones Info">
                     <i class="fa-solid fa-heart-pulse text-lg"></i>
-                </button>
-                <button onclick="document.getElementById('voiceHelpModal').showModal()" class="text-slate-500 hover:text-blue-400 transition p-2" title="Voice Commands Help">
-                    <i class="fa-solid fa-circle-info text-lg"></i>
                 </button>
             </div>
 
@@ -219,23 +219,23 @@
                 </div>
                 <div class="space-y-3">
                     <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
-                        <span class="text-emerald-400 font-black text-base">START SESSION</span>
+                        <span class="text-emerald-400 font-black text-lg">START SESSION</span>
                         <span class="text-slate-100 font-mono font-bold text-base">Start, Go, Ride</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
-                        <span class="text-rose-400 font-black text-base">STOP SESSION</span>
+                        <span class="text-rose-400 font-black text-lg">STOP SESSION</span>
                         <span class="text-slate-100 font-mono font-bold text-base">Stop, End, Done</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
-                        <span class="text-amber-400 font-black text-base">PAUSE / RESUME</span>
+                        <span class="text-amber-400 font-black text-lg">PAUSE / RESUME</span>
                         <span class="text-slate-100 font-mono font-bold text-base">Pause, Resume</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
-                        <span class="text-blue-400 font-black text-base">RECORD LAP</span>
+                        <span class="text-blue-400 font-black text-lg">RECORD LAP</span>
                         <span class="text-slate-100 font-mono font-bold text-base">Lap, Next, Mark</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-800/40 p-4 rounded-xl border border-slate-700">
-                        <span class="text-purple-400 font-black text-base">SWITCH TIMER</span>
+                        <span class="text-purple-400 font-black text-lg">SWITCH TIMER</span>
                         <span class="text-slate-100 font-mono font-bold text-base">Switch, Swap</span>
                     </div>
                 </div>
@@ -506,8 +506,8 @@
                 </div>
             </div>
 
-            <!-- Log - Height fixed to h-80 for better visibility -->
-            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-80 overflow-y-auto max-w-[1400px] w-full mx-auto shadow-inner" id="consoleLog">
+            <!-- Log - Height fixed to h-96 for better visibility -->
+            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-96 overflow-y-auto max-w-[1400px] w-full mx-auto shadow-inner" id="consoleLog">
                 <p>> System Ready.</p>
             </div>
             
@@ -800,7 +800,8 @@
             const limits = getZoneLimits();
             const zones = [1, 2, 3, 4, 5];
             let currentZone = 0;
-            if (hr >= limits[4]) currentZone = 5;
+            if (hr >= limits[5]) currentZone = 5;
+            else if (hr >= limits[4]) currentZone = 5;
             else if (hr >= limits[3]) currentZone = 4;
             else if (hr >= limits[2]) currentZone = 3;
             else if (hr >= limits[1]) currentZone = 2;
@@ -809,26 +810,26 @@
             zones.forEach(zIdx => {
                 const bar = document.getElementById(`barZ${zIdx}`);
                 const fill = document.getElementById(`fillZ${zIdx}`);
-                const min = zIdx === 1 ? limits[0] : limits[zIdx-1]; // Corrected min lookup
-                const max = limits[zIdx]; // Corrected max lookup
+                const min = limits[zIdx - 1];
+                const max = limits[zIdx];
                 
                 let fillPct = 0;
                 if (hr >= max) fillPct = 100;
                 else if (hr > min) fillPct = ((hr - min) / (max - min)) * 100;
-                
+                else fillPct = 0;
+
                 fill.style.height = `${fillPct}%`;
+                
+                bar.classList.remove('opacity-100', 'opacity-80', 'opacity-30', 'border-slate-400');
                 
                 if (currentZone === zIdx) { 
                     bar.style.flex = '2.2'; 
                     bar.classList.add('border-slate-400', 'opacity-100'); 
-                    bar.classList.remove('opacity-30');
                 } else if (currentZone > zIdx) {
                     bar.style.flex = '1';
-                    bar.classList.remove('border-slate-400', 'opacity-30');
                     bar.classList.add('opacity-80');
                 } else {
                     bar.style.flex = '1';
-                    bar.classList.remove('border-slate-400', 'opacity-100');
                     bar.classList.add('opacity-30');
                 }
             });
@@ -890,7 +891,7 @@
                 const btn = document.getElementById('connectBtn');
                 btn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-900/20');
                 btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
-                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200">Bike Connected</span>';
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200 ml-2">Bike Connected</span>';
 
                 setupBattery(server, 'bike');
                 const service = await server.getPrimaryService(BIKE_UUID);
@@ -918,7 +919,7 @@
                 const btn = document.getElementById('connectHrBtn');
                 btn.classList.remove('bg-rose-600', 'hover:bg-rose-500', 'shadow-rose-900/20');
                 btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
-                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200">HR Connected</span>';
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200 ml-2">HR Connected</span>';
 
                 setupBattery(server, 'hr');
                 const service = await server.getPrimaryService(HR_SERVICE_UUID);
@@ -939,11 +940,6 @@
             document.getElementById('resistanceValue').textContent = res;
             document.getElementById('powerValue').textContent = watts;
             document.getElementById('powerBar').style.width = `${Math.min((watts/500)*100, 100)}%`;
-            if (prefs.targetRpmEnabled) {
-                const rc = document.getElementById('rpmCard');
-                if (Math.abs(rpm - prefs.targetRpmValue) <= 3) rc.classList.add('on-target');
-                else rc.classList.remove('on-target');
-            }
             if (timerInterval && !isPaused) {
                 sessionData.rpmSum += rpm; sessionData.powerSum += watts; sessionData.count++;
                 lapData.rpmSum += rpm; lapData.powerSum += watts; lapData.count++;
@@ -1058,7 +1054,7 @@
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50";
-            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lblData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
+            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono text-blue-400">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono text-yellow-400">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono text-rose-400">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
             lapNumber++;
             lapOffsetSeconds = elapsedTime; 
