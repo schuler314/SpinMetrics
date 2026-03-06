@@ -65,6 +65,10 @@
             50% { opacity: 1; }
             100% { opacity: 0.8; }
         }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -349,6 +353,26 @@
                 </div>
             </div>
 
+            <!-- Mobile Card Navigation (Only visible in mobile view) -->
+            <div id="mobileCardNav" class="hidden flex-row gap-2 max-w-[1400px] w-full mx-auto transition-all">
+                <button class="nav-btn flex-1 py-3 text-emerald-500 rounded-2xl bg-slate-800 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all flex flex-col items-center justify-center gap-1" data-target="timerCard">
+                    <i class="fa-solid fa-stopwatch text-xl"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest">Time</span>
+                </button>
+                <button class="nav-btn flex-1 py-3 text-rose-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="hrCard">
+                    <i class="fa-solid fa-heart text-xl"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest">HR</span>
+                </button>
+                <button class="nav-btn flex-1 py-3 text-yellow-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="powerCard">
+                    <i class="fa-solid fa-bolt text-xl"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest">Power</span>
+                </button>
+                <button class="nav-btn flex-1 py-3 text-blue-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="rpmCard">
+                    <i class="fa-solid fa-bicycle text-xl"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest">RPM</span>
+                </button>
+            </div>
+
             <!-- Dashboard Grid -->
             <div id="dashboardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all duration-300">
                 
@@ -375,7 +399,7 @@
                 </div>
 
                 <!-- Heart Rate Card -->
-                <div class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-row relative overflow-hidden min-h-[220px] md:min-h-[260px]">
+                <div id="hrCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-row relative overflow-hidden min-h-[220px] md:min-h-[260px]">
                     <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
                         <i class="fa-solid fa-heart text-9xl text-rose-500"></i>
                     </div>
@@ -419,7 +443,7 @@
                 </div>
 
                 <!-- Power Card -->
-                <div class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px]">
+                <div id="powerCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px]">
                     <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
                         <i class="fa-solid fa-bolt text-9xl text-yellow-500"></i>
                     </div>
@@ -551,6 +575,12 @@
         let history = [];
         let elapsedTime = 0;
         
+        // --- MOBILE SPECIFIC STATE ---
+        let activeMobileCard = 'timerCard';
+        const cards = ['timerCard', 'hrCard', 'powerCard', 'rpmCard'];
+        let touchStartX = 0;
+        let touchEndX = 0;
+
         // --- PREFERENCES ---
         function getDynamicDefaultAge() {
             const now = new Date();
@@ -611,6 +641,24 @@
                 });
             });
 
+            // Mobile Tab Controls
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const target = e.currentTarget.dataset.target;
+                    switchMobileCard(target);
+                });
+            });
+
+            // Swipe Controls
+            const grid = document.getElementById('dashboardGrid');
+            grid.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+            grid.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+
             const vs = document.getElementById('voiceStatus');
             if(vs) {
                 vs.onclick = (e) => {
@@ -655,6 +703,20 @@
             };
             document.addEventListener('click', enableVoiceOnInteraction);
         });
+
+        function handleSwipe() {
+            if (currentViewMode !== 'mobile') return;
+            const swipeThreshold = 50;
+            let idx = cards.indexOf(activeMobileCard);
+            if (touchEndX < touchStartX - swipeThreshold) {
+                // Swipe Left -> Next
+                if (idx < cards.length - 1) switchMobileCard(cards[idx + 1]);
+            }
+            if (touchEndX > touchStartX + swipeThreshold) {
+                // Swipe Right -> Prev
+                if (idx > 0) switchMobileCard(cards[idx - 1]);
+            }
+        }
 
         function isVoiceActive() {
             const vs = document.getElementById('voiceStatus');
@@ -780,6 +842,86 @@
         function stopVoiceListening() { if (recognition) try { recognition.stop(); } catch(e){} }
 
         // --- UI LOGIC ---
+        function switchMobileCard(targetId) {
+            activeMobileCard = targetId;
+            if (currentViewMode !== 'mobile') return;
+
+            cards.forEach(id => {
+                const el = document.getElementById(id);
+                if (id === targetId) {
+                    el.style.display = id === 'hrCard' ? 'flex' : 'flex'; // hrCard is flex-row naturally, others flex-col
+                    // Re-trigger animation
+                    el.style.animation = 'none';
+                    el.offsetHeight; /* trigger reflow */
+                    el.style.animation = 'fadeIn 0.3s ease-out forwards';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            const colors = {
+                'timerCard': { text: 'text-emerald-500', border: 'border-emerald-500/30', shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]' },
+                'hrCard': { text: 'text-rose-500', border: 'border-rose-500/30', shadow: 'shadow-[0_0_15px_rgba(244,63,94,0.15)]' },
+                'powerCard': { text: 'text-yellow-500', border: 'border-yellow-500/30', shadow: 'shadow-[0_0_15px_rgba(234,179,8,0.15)]' },
+                'rpmCard': { text: 'text-blue-500', border: 'border-blue-500/30', shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]' }
+            };
+
+            // Update Nav UI
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const t = btn.dataset.target;
+                if (t === targetId) {
+                    btn.className = `nav-btn flex-1 py-3 ${colors[t].text} rounded-2xl bg-slate-800 border ${colors[t].border} ${colors[t].shadow} transition-all flex flex-col items-center justify-center gap-1`;
+                } else {
+                    btn.className = `nav-btn flex-1 py-3 ${colors[t].text} rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70`;
+                }
+            });
+        }
+
+        function setView(mode) {
+            currentViewMode = mode;
+            const viewText = document.getElementById('viewText');
+            const viewIcon = document.getElementById('viewIcon');
+            const grid = document.getElementById('dashboardGrid');
+            const btm = document.getElementById('bottomGrid');
+            const mobileNav = document.getElementById('mobileCardNav');
+
+            if (mode === 'mobile') {
+                viewIcon.className = 'fa-solid fa-mobile-screen'; viewText.innerText = 'Mobile';
+                
+                // Show Mobile Nav
+                mobileNav.classList.remove('hidden');
+                mobileNav.classList.add('flex');
+                
+                // Adjust Grids for mobile layout
+                grid.className = "flex flex-col gap-4 max-w-[1400px] w-full mx-auto transition-all";
+                btm.className = "grid grid-cols-1 gap-4 max-w-[1400px] w-full mx-auto transition-all";
+                
+                // Force a nice height on mobile
+                document.querySelectorAll('.stat-card').forEach(el => el.classList.add('min-h-[280px]'));
+                
+                switchMobileCard(activeMobileCard);
+            } else {
+                viewIcon.className = 'fa-solid fa-desktop'; viewText.innerText = 'Desktop';
+                
+                // Hide Mobile Nav
+                mobileNav.classList.add('hidden');
+                mobileNav.classList.remove('flex');
+
+                // Restore Standard Grid
+                grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all duration-300";
+                btm.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] w-full mx-auto transition-all duration-300";
+                
+                document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('min-h-[280px]'));
+
+                // Restore all cards visibility
+                cards.forEach(id => {
+                    const el = document.getElementById(id);
+                    el.style.display = ''; // Clear inline styles to let tailwind take over
+                    el.style.animation = ''; 
+                });
+            }
+        }
+
         function showHrZoneInfo() {
             // Recalculate ranges based on latest settings every time modal is opened
             const limits = getZoneLimits();
@@ -886,27 +1028,6 @@
             }
             
             return [Math.round(maxHr * 0.5), Math.round(maxHr * 0.6), Math.round(maxHr * 0.7), Math.round(maxHr * 0.8), Math.round(maxHr * 0.9), Math.round(maxHr)];
-        }
-
-        function setView(mode) {
-            currentViewMode = mode;
-            const viewText = document.getElementById('viewText');
-            const viewIcon = document.getElementById('viewIcon');
-            const grid = document.getElementById('dashboardGrid');
-            const btm = document.getElementById('bottomGrid');
-            if (mode === 'mobile') {
-                viewIcon.className = 'fa-solid fa-mobile-screen'; viewText.innerText = 'Mobile';
-                grid.className = "grid grid-cols-2 gap-2 max-w-[1400px] w-full mx-auto transition-all";
-                btm.className = "grid grid-cols-1 gap-4 max-w-[1400px] w-full mx-auto transition-all";
-                document.querySelectorAll('.stat-card span.text-5xl, .stat-card span.text-6xl').forEach(el => el.classList.replace('text-6xl', 'text-4xl'));
-            } else {
-                viewIcon.className = 'fa-solid fa-desktop'; viewText.innerText = 'Desktop';
-                grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all";
-                btm.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] w-full mx-auto transition-all";
-                document.querySelectorAll('.stat-card span.text-4xl').forEach(el => {
-                    if (['mainTimerValue', 'hrValue', 'powerValue', 'rpmValue'].includes(el.id)) el.classList.replace('text-4xl', 'text-6xl');
-                });
-            }
         }
 
         // --- BLUETOOTH TOGGLE LOGIC ---
