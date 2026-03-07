@@ -323,51 +323,61 @@
             
             <!-- Controls -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-[1400px] w-full mx-auto">
-                <div class="flex gap-2">
+                <!-- Mode Toggle -->
+                <div id="modeToggleContainer" class="col-span-1 xl:col-span-2 flex bg-slate-900 rounded-xl p-1 border border-slate-800 w-full mb-1">
+                    <button id="modeIndoorBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-house"></i> <span class="hidden md:inline">Indoor</span>
+                    </button>
+                    <button id="modeOutdoorBtn" class="flex-1 text-slate-500 hover:text-slate-300 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-road"></i> <span class="hidden md:inline">Outdoor</span>
+                    </button>
+                </div>
+
+                <div id="connectButtonsDiv" class="flex gap-2">
                     <button id="connectBtn" class="flex-1 group relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-95">
                         <i class="fa-brands fa-bluetooth-b text-lg"></i>
-                        <span>Connect Bike</span>
+                        <span class="hidden md:inline">Connect Bike</span>
                     </button>
                     <button id="connectHrBtn" class="flex-1 group relative flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-rose-900/20 active:scale-95">
                         <i class="fa-solid fa-heart-pulse text-lg"></i>
-                        <span>Connect HR</span>
+                        <span class="hidden md:inline">Connect HR</span>
                     </button>
                 </div>
 
                 <div class="flex gap-2 text-white">
                     <button id="startBtn" class="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
-                        <i class="fa-solid fa-play"></i> Start
+                        <i class="fa-solid fa-play"></i> <span class="hidden md:inline">Start</span>
                     </button>
                     
                     <button id="pauseBtn" disabled class="flex-1 flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-800 disabled:text-slate-600 font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-yellow-900/20 active:scale-95">
-                        <i id="pauseIcon" class="fa-solid fa-pause"></i> <span id="pauseText">Pause</span>
+                        <i id="pauseIcon" class="fa-solid fa-pause"></i> <span id="pauseText" class="hidden md:inline">Pause</span>
                     </button>
 
                     <button id="lapBtn" disabled class="flex-1 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-800 disabled:text-slate-600 font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-amber-900/20 active:scale-95">
-                        <i class="fa-solid fa-flag-checkered"></i> Lap
+                        <i class="fa-solid fa-flag-checkered"></i> <span class="hidden md:inline">Lap</span>
                     </button>
 
                     <button id="stopBtn" disabled class="flex-1 flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 disabled:bg-slate-800 disabled:text-slate-600 font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-slate-900/20 active:scale-95">
-                        <i class="fa-solid fa-stop"></i> Stop
+                        <i class="fa-solid fa-stop"></i> <span class="hidden md:inline">Stop</span>
                     </button>
                 </div>
             </div>
 
             <!-- Mobile Card Navigation (Only visible in mobile view) -->
             <div id="mobileCardNav" class="hidden flex-row gap-2 max-w-[1400px] w-full mx-auto transition-all">
-                <button class="nav-btn flex-1 py-3 text-emerald-500 rounded-2xl bg-slate-800 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all flex flex-col items-center justify-center gap-1" data-target="timerCard">
+                <button id="navNav1" class="nav-btn flex-1 py-3 text-emerald-500 rounded-2xl bg-slate-800 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all flex flex-col items-center justify-center gap-1" data-target="timerCard">
                     <i class="fa-solid fa-stopwatch text-xl"></i>
                     <span class="text-[9px] font-black uppercase tracking-widest">Time</span>
                 </button>
-                <button class="nav-btn flex-1 py-3 text-rose-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="hrCard">
+                <button id="navNav2" class="nav-btn flex-1 py-3 text-rose-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="hrCard">
                     <i class="fa-solid fa-heart text-xl"></i>
                     <span class="text-[9px] font-black uppercase tracking-widest">HR</span>
                 </button>
-                <button class="nav-btn flex-1 py-3 text-yellow-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="powerCard">
+                <button id="navNav3" class="nav-btn flex-1 py-3 text-yellow-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="powerCard">
                     <i class="fa-solid fa-bolt text-xl"></i>
                     <span class="text-[9px] font-black uppercase tracking-widest">Power</span>
                 </button>
-                <button class="nav-btn flex-1 py-3 text-blue-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="rpmCard">
+                <button id="navNav4" class="nav-btn flex-1 py-3 text-blue-500 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-1 opacity-70" data-target="rpmCard">
                     <i class="fa-solid fa-bicycle text-xl"></i>
                     <span class="text-[9px] font-black uppercase tracking-widest">RPM</span>
                 </button>
@@ -490,6 +500,42 @@
                     </div>
                 </div>
 
+                <!-- Speed Card (Outdoor) -->
+                <div id="speedCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px] hidden transition-all duration-300">
+                    <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
+                        <i class="fa-solid fa-gauge-high text-9xl text-yellow-500"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Speed</h2>
+                        <div class="flex items-baseline gap-2 text-white">
+                            <span id="speedValue" class="text-5xl md:text-6xl font-mono font-bold tracking-tighter">0.0</span>
+                            <span class="text-slate-500 text-sm md:text-lg font-medium">MPH</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 mt-auto text-white">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Avg Speed</span>
+                        <span id="avgSpeedValue" class="text-2xl md:text-3xl font-mono font-bold text-yellow-100">0.0</span>
+                    </div>
+                </div>
+
+                <!-- Distance Card (Outdoor) -->
+                <div id="distanceCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px] hidden transition-all duration-300">
+                    <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
+                        <i class="fa-solid fa-route text-9xl text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Distance</h2>
+                        <div class="flex items-baseline gap-2 text-white">
+                            <span id="distanceValue" class="text-5xl md:text-6xl font-mono font-bold tracking-tighter">0.00</span>
+                            <span class="text-slate-500 text-sm md:text-lg font-medium">MI</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 mt-auto text-white">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">GPS Status</span>
+                        <span id="gpsStatusValue" class="text-sm font-bold text-slate-400 flex items-center gap-2"><i class="fa-solid fa-satellite-dish"></i> <span id="gpsText">Waiting...</span></span>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Bottom Grid -->
@@ -505,8 +551,8 @@
                                 <tr>
                                     <th class="px-4 py-3">#</th>
                                     <th class="px-4 py-3">Time</th>
-                                    <th class="px-4 py-3">Avg RPM</th>
-                                    <th class="px-4 py-3">Avg Watts</th>
+                                    <th class="px-4 py-3" id="thData1">Avg RPM</th>
+                                    <th class="px-4 py-3" id="thData2">Avg Watts</th>
                                     <th class="px-4 py-3">Avg HR</th>
                                     <th class="px-4 py-3">Zone</th>
                                 </tr>
@@ -570,16 +616,24 @@
         let lapNumber = 0;
         let displayMode = 'total'; 
 
-        let sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
-        let lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+        let sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0, speedSum: 0, speedCount: 0 };
+        let lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0, speedSum: 0, speedCount: 0 };
         let history = [];
         let elapsedTime = 0;
         
         // --- MOBILE SPECIFIC STATE ---
         let activeMobileCard = 'timerCard';
-        const cards = ['timerCard', 'hrCard', 'powerCard', 'rpmCard'];
+        let cards = ['timerCard', 'hrCard', 'powerCard', 'rpmCard'];
         let touchStartX = 0;
         let touchEndX = 0;
+
+        // --- CYCLING MODE & GPS STATE ---
+        let cyclingMode = 'indoor';
+        let geoWatchId = null;
+        let lastPosition = null;
+        let totalDistanceMiles = 0;
+        let lapDistanceMiles = 0;
+        let currentSpeedMph = 0;
 
         // --- PREFERENCES ---
         function getDynamicDefaultAge() {
@@ -614,6 +668,8 @@
             document.getElementById('timerCard').addEventListener('click', toggleDurationMode);
             document.getElementById('btnViewToggle').addEventListener('click', toggleView);
             document.getElementById('btnFullScreen').addEventListener('click', toggleFullScreen);
+            document.getElementById('modeIndoorBtn').addEventListener('click', () => setCyclingMode('indoor'));
+            document.getElementById('modeOutdoorBtn').addEventListener('click', () => setCyclingMode('outdoor'));
             
             // Fix RHR Toggle logic on method select change
             const hrMethodSelect = document.getElementById('settingHrMethod');
@@ -841,12 +897,105 @@
         function startVoiceListening() { if (recognition) try { recognition.start(); } catch(e){} }
         function stopVoiceListening() { if (recognition) try { recognition.stop(); } catch(e){} }
 
+        // --- CYCLING MODE & GPS LOGIC ---
+        function setCyclingMode(mode) {
+            cyclingMode = mode;
+            const indoorBtn = document.getElementById('modeIndoorBtn');
+            const outdoorBtn = document.getElementById('modeOutdoorBtn');
+            const connectBikeBtn = document.getElementById('connectBtn'); 
+
+            if (mode === 'indoor') {
+                indoorBtn.className = "flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2";
+                outdoorBtn.className = "flex-1 text-slate-500 hover:text-slate-300 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2";
+                connectBikeBtn.style.display = 'flex';
+                cards = ['timerCard', 'hrCard', 'powerCard', 'rpmCard'];
+
+                document.getElementById('navNav3').innerHTML = `<i class="fa-solid fa-bolt text-xl"></i><span class="text-[9px] font-black uppercase tracking-widest">Power</span>`;
+                document.getElementById('navNav3').dataset.target = 'powerCard';
+                document.getElementById('navNav4').innerHTML = `<i class="fa-solid fa-bicycle text-xl"></i><span class="text-[9px] font-black uppercase tracking-widest">RPM</span>`;
+                document.getElementById('navNav4').dataset.target = 'rpmCard';
+
+                document.getElementById('thData1').innerText = 'Avg RPM';
+                document.getElementById('thData2').innerText = 'Avg Watts';
+            } else {
+                outdoorBtn.className = "flex-1 bg-emerald-600 text-white py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2";
+                indoorBtn.className = "flex-1 text-slate-500 hover:text-slate-300 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2";
+                connectBikeBtn.style.display = 'none'; 
+                cards = ['timerCard', 'hrCard', 'speedCard', 'distanceCard'];
+
+                document.getElementById('navNav3').innerHTML = `<i class="fa-solid fa-gauge-high text-xl"></i><span class="text-[9px] font-black uppercase tracking-widest">Speed</span>`;
+                document.getElementById('navNav3').dataset.target = 'speedCard';
+                document.getElementById('navNav4').innerHTML = `<i class="fa-solid fa-route text-xl"></i><span class="text-[9px] font-black uppercase tracking-widest">Dist</span>`;
+                document.getElementById('navNav4').dataset.target = 'distanceCard';
+
+                document.getElementById('thData1').innerText = 'Avg Spd';
+                document.getElementById('thData2').innerText = 'Dist (mi)';
+            }
+
+            setView(currentViewMode);
+            if (currentViewMode === 'mobile') switchMobileCard('timerCard');
+        }
+
+        function startGps() {
+            if ("geolocation" in navigator) {
+                document.getElementById('gpsText').innerText = "Acquiring...";
+                document.getElementById('gpsStatusValue').className = "text-sm font-bold text-yellow-400 flex items-center gap-2";
+                geoWatchId = navigator.geolocation.watchPosition(
+                    (pos) => {
+                        document.getElementById('gpsText').innerText = "Connected";
+                        document.getElementById('gpsStatusValue').className = "text-sm font-bold text-emerald-400 flex items-center gap-2";
+                        if (isPaused) return; 
+                        
+                        if (lastPosition) {
+                            const dist = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+                            totalDistanceMiles += dist;
+                            lapDistanceMiles += dist;
+                        }
+                        lastPosition = pos;
+                        
+                        if (pos.coords.speed !== null && pos.coords.speed >= 0) {
+                            currentSpeedMph = pos.coords.speed * 2.23694; // Convert m/s to mph
+                        }
+                        
+                        document.getElementById('speedValue').innerText = currentSpeedMph.toFixed(1);
+                        document.getElementById('distanceValue').innerText = totalDistanceMiles.toFixed(2);
+
+                        if (timerInterval && !isPaused) {
+                            sessionData.speedSum += currentSpeedMph; sessionData.speedCount++;
+                            lapData.speedSum += currentSpeedMph; lapData.speedCount++;
+                            updateAverages();
+                        }
+                    },
+                    (err) => { 
+                        log("GPS Error: " + err.message); 
+                        document.getElementById('gpsText').innerText = "Error";
+                        document.getElementById('gpsStatusValue').className = "text-sm font-bold text-rose-400 flex items-center gap-2";
+                    },
+                    { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
+                );
+            } else {
+                log("GPS Not Supported");
+                document.getElementById('gpsText').innerText = "Unsupported";
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 3958.8; // Radius of earth in miles
+            const dLat = (lat2-lat1) * (Math.PI/180);
+            const dLon = (lon2-lon1) * (Math.PI/180);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; 
+        }
+
         // --- UI LOGIC ---
         function switchMobileCard(targetId) {
             activeMobileCard = targetId;
             if (currentViewMode !== 'mobile') return;
 
-            cards.forEach(id => {
+            const allCards = ['timerCard', 'hrCard', 'powerCard', 'rpmCard', 'speedCard', 'distanceCard'];
+
+            allCards.forEach(id => {
                 const el = document.getElementById(id);
                 if (id === targetId) {
                     el.style.display = id === 'hrCard' ? 'flex' : 'flex'; // hrCard is flex-row naturally, others flex-col
@@ -863,7 +1012,9 @@
                 'timerCard': { text: 'text-emerald-500', border: 'border-emerald-500/30', shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]' },
                 'hrCard': { text: 'text-rose-500', border: 'border-rose-500/30', shadow: 'shadow-[0_0_15px_rgba(244,63,94,0.15)]' },
                 'powerCard': { text: 'text-yellow-500', border: 'border-yellow-500/30', shadow: 'shadow-[0_0_15px_rgba(234,179,8,0.15)]' },
-                'rpmCard': { text: 'text-blue-500', border: 'border-blue-500/30', shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]' }
+                'rpmCard': { text: 'text-blue-500', border: 'border-blue-500/30', shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]' },
+                'speedCard': { text: 'text-yellow-500', border: 'border-yellow-500/30', shadow: 'shadow-[0_0_15px_rgba(234,179,8,0.15)]' },
+                'distanceCard': { text: 'text-blue-500', border: 'border-blue-500/30', shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]' }
             };
 
             // Update Nav UI
@@ -878,19 +1029,30 @@
         }
 
         function setView(mode) {
+            // Force indoor mode if switching to desktop to prevent getting stuck
+            if (mode === 'desktop' && cyclingMode === 'outdoor') {
+                setCyclingMode('indoor');
+                return;
+            }
+
             currentViewMode = mode;
             const viewText = document.getElementById('viewText');
             const viewIcon = document.getElementById('viewIcon');
             const grid = document.getElementById('dashboardGrid');
             const btm = document.getElementById('bottomGrid');
             const mobileNav = document.getElementById('mobileCardNav');
+            const modeToggle = document.getElementById('modeToggleContainer');
 
             if (mode === 'mobile') {
                 viewIcon.className = 'fa-solid fa-mobile-screen'; viewText.innerText = 'Mobile';
                 
-                // Show Mobile Nav
+                // Show Mobile Nav & Mode Toggle
                 mobileNav.classList.remove('hidden');
                 mobileNav.classList.add('flex');
+                if (modeToggle) {
+                    modeToggle.classList.remove('hidden');
+                    modeToggle.classList.add('flex');
+                }
                 
                 // Adjust Grids for mobile layout
                 grid.className = "flex flex-col gap-4 max-w-[1400px] w-full mx-auto transition-all";
@@ -903,9 +1065,13 @@
             } else {
                 viewIcon.className = 'fa-solid fa-desktop'; viewText.innerText = 'Desktop';
                 
-                // Hide Mobile Nav
+                // Hide Mobile Nav & Mode Toggle
                 mobileNav.classList.add('hidden');
                 mobileNav.classList.remove('flex');
+                if (modeToggle) {
+                    modeToggle.classList.add('hidden');
+                    modeToggle.classList.remove('flex');
+                }
 
                 // Restore Standard Grid
                 grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1400px] w-full mx-auto transition-all duration-300";
@@ -913,11 +1079,16 @@
                 
                 document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('min-h-[280px]'));
 
-                // Restore all cards visibility
-                cards.forEach(id => {
+                // Restore active cards visibility
+                const allCards = ['timerCard', 'hrCard', 'powerCard', 'rpmCard', 'speedCard', 'distanceCard'];
+                allCards.forEach(id => {
                     const el = document.getElementById(id);
-                    el.style.display = ''; // Clear inline styles to let tailwind take over
-                    el.style.animation = ''; 
+                    if (cards.includes(id)) {
+                        el.style.display = ''; // Clear inline styles to let tailwind take over
+                        el.style.animation = ''; 
+                    } else {
+                        el.style.display = 'none';
+                    }
                 });
             }
         }
@@ -1055,14 +1226,14 @@
             document.getElementById('bikeDot').className = "w-2 h-2 rounded-full bg-slate-600";
             const btn = document.getElementById('connectBtn');
             btn.className = "flex-1 group relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-95";
-            btn.innerHTML = '<i class="fa-brands fa-bluetooth-b text-lg"></i><span>Connect Bike</span>';
+            btn.innerHTML = '<i class="fa-brands fa-bluetooth-b text-lg"></i><span class="hidden md:inline">Connect Bike</span>';
         }
 
         function resetHrUI() {
             document.getElementById('hrDot').className = "w-2 h-2 rounded-full bg-slate-600";
             const btn = document.getElementById('connectHrBtn');
             btn.className = "flex-1 group relative flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-rose-900/20 active:scale-95";
-            btn.innerHTML = '<i class="fa-solid fa-heart-pulse text-lg"></i><span>Connect HR</span>';
+            btn.innerHTML = '<i class="fa-solid fa-heart-pulse text-lg"></i><span class="hidden md:inline">Connect HR</span>';
         }
 
         async function connectToBike() {
@@ -1079,7 +1250,7 @@
                 const btn = document.getElementById('connectBtn');
                 btn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-900/20');
                 btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
-                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200 ml-2">Bike Connected</span>';
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200 hidden md:inline ml-2">Bike Connected</span>';
 
                 bikeDevice.addEventListener('gattserverdisconnected', resetBikeUI);
 
@@ -1109,7 +1280,7 @@
                 const btn = document.getElementById('connectHrBtn');
                 btn.classList.remove('bg-rose-600', 'hover:bg-rose-500', 'shadow-rose-900/20');
                 btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/50', 'hover:bg-slate-700');
-                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200 ml-2">HR Connected</span>';
+                btn.innerHTML = '<i class="fa-solid fa-link text-emerald-400 glow-pulse"></i><span class="text-slate-200 hidden md:inline ml-2">HR Connected</span>';
 
                 hrDevice.addEventListener('gattserverdisconnected', resetHrUI);
 
@@ -1178,14 +1349,19 @@
             initAudio();
             requestWakeLock();
             if (!startTime) {
-                sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
-                lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+                sessionData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0, speedSum: 0, speedCount: 0 };
+                lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0, speedSum: 0, speedCount: 0 };
                 lapNumber = 1;
                 document.getElementById('lapsTableBody').innerHTML = ''; 
                 startTime = Date.now();
                 lapOffsetSeconds = 0; 
                 totalPausedTime = 0;
                 elapsedTime = 0;
+
+                totalDistanceMiles = 0;
+                lapDistanceMiles = 0;
+                lastPosition = null;
+                document.getElementById('distanceValue').innerText = '0.00';
             } 
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
@@ -1194,6 +1370,11 @@
             document.getElementById('timerDot').className = "w-2 h-2 rounded-full bg-emerald-500 pulse-anim";
             document.getElementById('timerState').innerText = "Tracking";
             timerInterval = setInterval(updateTimers, 1000);
+            
+            if (cyclingMode === 'outdoor') {
+                startGps();
+            }
+
             log('Session Started');
         }
 
@@ -1202,14 +1383,14 @@
                 totalPausedTime += (Date.now() - pauseStartTime);
                 isPaused = false;
                 timerInterval = setInterval(updateTimers, 1000);
-                document.getElementById('pauseBtn').innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+                document.getElementById('pauseBtn').innerHTML = '<i class="fa-solid fa-pause"></i> <span class="hidden md:inline">Pause</span>';
                 log('Resumed');
             } else {
                 clearInterval(timerInterval);
                 timerInterval = null;
                 pauseStartTime = Date.now();
                 isPaused = true;
-                document.getElementById('pauseBtn').innerHTML = '<i class="fa-solid fa-play"></i> Resume';
+                document.getElementById('pauseBtn').innerHTML = '<i class="fa-solid fa-play"></i> <span class="hidden md:inline">Resume</span>';
                 log('Paused');
             }
         }
@@ -1219,6 +1400,13 @@
             timerInterval = null;
             isPaused = false;
             releaseWakeLock();
+
+            if (geoWatchId) {
+                navigator.geolocation.clearWatch(geoWatchId);
+                geoWatchId = null;
+                document.getElementById('gpsText').innerText = "Stopped";
+                document.getElementById('gpsStatusValue').className = "text-sm font-bold text-slate-400 flex items-center gap-2";
+            }
             
             if (startTime) {
                 if (elapsedTime - lapOffsetSeconds > 2) recordLap();
@@ -1226,9 +1414,10 @@
                 history.unshift({
                     id: Date.now(),
                     date: new Date().toLocaleString(),
+                    mode: cyclingMode,
                     duration: formatTime(elapsedTime),
-                    avgRpm: sessionData.count ? Math.round(sessionData.rpmSum / sessionData.count) : 0,
-                    avgPower: sessionData.count ? Math.round(sessionData.powerSum / sessionData.count) : 0,
+                    data1: cyclingMode === 'indoor' ? (sessionData.count ? Math.round(sessionData.rpmSum / sessionData.count) : 0) : (sessionData.speedCount ? (sessionData.speedSum / sessionData.speedCount).toFixed(1) : 0.0),
+                    data2: cyclingMode === 'indoor' ? (sessionData.count ? Math.round(sessionData.powerSum / sessionData.count) : 0) : totalDistanceMiles.toFixed(2),
                     avgHr: sessionData.hrCount ? Math.round(sessionData.hrSum / sessionData.hrCount) : 0
                 });
                 localStorage.setItem('spinMetrics_history', JSON.stringify(history));
@@ -1249,13 +1438,25 @@
             if (!startTime) return;
             const currentDur = Math.max(0, elapsedTime - lapOffsetSeconds);
             const avgHr = lapData.hrCount ? Math.round(lapData.hrSum / lapData.hrCount) : 0;
+            
+            let val1, val2;
+            if (cyclingMode === 'indoor') {
+                val1 = lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0;
+                val2 = lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0;
+            } else {
+                val1 = lapData.speedCount ? (lapData.speedSum/lapData.speedCount).toFixed(1) : 0.0;
+                val2 = lapDistanceMiles.toFixed(2);
+            }
+
             const row = document.createElement('tr');
             row.className = "border-b border-slate-800 hover:bg-slate-800/50 text-white";
-            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.rpmSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${lapData.count ? Math.round(lapData.powerSum/lapData.count) : 0}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
+            row.innerHTML = `<td class="px-4 py-3 font-mono text-slate-500">${lapNumber}</td><td class="px-4 py-3 font-mono font-bold text-white">${formatTime(currentDur)}</td><td class="px-4 py-3 font-mono">${val1}</td><td class="px-4 py-3 font-mono">${val2}</td><td class="px-4 py-3 font-mono">${avgHr}</td><td class="px-4 py-3 text-xs font-bold ${calculateHrZone(avgHr).colorClass}">${calculateHrZone(avgHr).label}</td>`;
             document.getElementById('lapsTableBody').prepend(row);
+            
             lapNumber++;
             lapOffsetSeconds = elapsedTime; 
-            lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0 };
+            lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0, speedSum: 0, speedCount: 0 };
+            lapDistanceMiles = 0;
             log('Lap Recorded');
         }
 
@@ -1335,9 +1536,15 @@
 
         function updateAverages() {
             const src = (displayMode === 'lap') ? lapData : sessionData;
-            if (src.count > 0) {
-                document.getElementById('avgRpmValue').innerText = Math.round(src.rpmSum / src.count);
-                document.getElementById('avgPowerValue').innerText = Math.round(src.powerSum / src.count);
+            if (cyclingMode === 'indoor') {
+                if (src.count > 0) {
+                    document.getElementById('avgRpmValue').innerText = Math.round(src.rpmSum / src.count);
+                    document.getElementById('avgPowerValue').innerText = Math.round(src.powerSum / src.count);
+                }
+            } else {
+                if (src.speedCount > 0) {
+                    document.getElementById('avgSpeedValue').innerText = (src.speedSum / src.speedCount).toFixed(1);
+                }
             }
             if (src.hrCount > 0) document.getElementById('avgHrValue').innerText = Math.round(src.hrSum / src.hrCount);
         }
@@ -1346,22 +1553,35 @@
             const l = document.getElementById('historyList');
             l.innerHTML = history.length ? '' : '<div class="text-center text-slate-600 py-10 italic text-sm">No history recorded yet.</div>';
             history.forEach(s => {
+                const mode = s.mode || 'indoor';
+                const d1 = s.data1 !== undefined ? s.data1 : s.avgRpm;
+                const d2 = s.data2 !== undefined ? s.data2 : s.avgPower;
+                
+                const modeIcon = mode === 'outdoor' ? '<i class="fa-solid fa-road text-emerald-500" title="Outdoor"></i>' : '<i class="fa-solid fa-house text-blue-500" title="Indoor"></i>';
+                const d1Label = mode === 'outdoor' ? 'S' : 'R';
+                const d2Label = mode === 'outdoor' ? 'D' : 'W';
+
                 const d = document.createElement('div');
                 d.className = "bg-slate-800 p-4 rounded-xl border border-slate-700 text-sm relative group mb-3 shadow-md text-white";
                 d.innerHTML = `
                     <button onclick="deleteHistoryItem(${s.id})" class="absolute top-3 right-3 text-slate-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition p-1" title="Delete record">
                         <i class="fa-solid fa-trash-can text-base"></i>
                     </button>
-                    <div class="flex justify-between mb-2 pr-8"><span class="text-slate-400 font-bold text-xs">${s.date}</span><span class="font-bold text-emerald-400 text-base">${s.duration}</span></div>
-                    <div class="grid grid-cols-3 gap-2 font-mono text-xs"><div class="bg-slate-900/40 p-2 rounded text-center text-blue-400">R:${s.avgRpm}</div><div class="bg-slate-900/40 p-2 rounded text-center text-yellow-400">W:${s.avgPower}</div><div class="bg-slate-900/40 p-2 rounded text-center text-rose-400">H:${s.avgHr}</div></div>`;
+                    <div class="flex justify-between mb-2 pr-8"><span class="text-slate-400 font-bold text-xs flex items-center gap-2">${modeIcon} ${s.date}</span><span class="font-bold text-emerald-400 text-base">${s.duration}</span></div>
+                    <div class="grid grid-cols-3 gap-2 font-mono text-xs"><div class="bg-slate-900/40 p-2 rounded text-center text-blue-400">${d1Label}:${d1}</div><div class="bg-slate-900/40 p-2 rounded text-center text-yellow-400">${d2Label}:${d2}</div><div class="bg-slate-900/40 p-2 rounded text-center text-rose-400">H:${s.avgHr}</div></div>`;
                 l.appendChild(d);
             });
         }
 
         function downloadHistory() {
             if (history.length === 0) { log("History is empty."); return; }
-            let csv = "Date,Duration,Avg RPM,Avg Power,Avg HR\n";
-            history.forEach(s => csv += `"${s.date}",${s.duration},${s.avgRpm},${s.avgPower},${s.avgHr}\n`);
+            let csv = "Date,Mode,Duration,Avg RPM/Speed,Avg Power/Dist,Avg HR\n";
+            history.forEach(s => {
+                const mode = s.mode || 'indoor';
+                const d1 = s.data1 !== undefined ? s.data1 : s.avgRpm;
+                const d2 = s.data2 !== undefined ? s.data2 : s.avgPower;
+                csv += `"${s.date}","${mode}",${s.duration},${d1},${d2},${s.avgHr}\n`;
+            });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `History_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
