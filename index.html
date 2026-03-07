@@ -519,20 +519,26 @@
                 </div>
 
                 <!-- Distance Card (Outdoor) -->
-                <div id="distanceCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px] hidden transition-all duration-300">
+                <div id="distanceCard" class="stat-card bg-slate-800 rounded-2xl p-6 border border-slate-700 flex-col justify-between relative overflow-hidden min-h-[220px] md:min-h-[260px] hidden cursor-pointer hover:border-blue-500 transition-all duration-300">
                     <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
                         <i class="fa-solid fa-route text-9xl text-blue-500"></i>
                     </div>
                     <div>
-                        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Distance</h2>
+                        <h2 id="mainDistanceLabel" class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Total Distance <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i></h2>
                         <div class="flex items-baseline gap-2 text-white">
-                            <span id="distanceValue" class="text-5xl md:text-6xl font-mono font-bold tracking-tighter">0.00</span>
+                            <span id="mainDistanceValue" class="text-5xl md:text-6xl font-mono font-bold tracking-tighter">0.00</span>
                             <span class="text-slate-500 text-sm md:text-lg font-medium">MI</span>
                         </div>
                     </div>
-                    <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 mt-auto text-white">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">GPS Status</span>
-                        <span id="gpsStatusValue" class="text-sm font-bold text-slate-400 flex items-center gap-2"><i class="fa-solid fa-satellite-dish"></i> <span id="gpsText">Waiting...</span></span>
+                    <div class="grid grid-cols-2 gap-3 mt-auto">
+                        <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 border-l-4 border-l-blue-500 text-white">
+                            <span id="subDistanceLabel" class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Lap Dist</span>
+                            <span id="subDistanceValue" class="text-xl md:text-2xl font-mono font-bold text-blue-400">0.00</span>
+                        </div>
+                        <div class="bg-slate-900/60 rounded-xl p-3 flex flex-col justify-center border border-slate-700/50 text-white overflow-hidden">
+                            <span class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">GPS Status</span>
+                            <span id="gpsStatusValue" class="text-xs md:text-sm font-bold text-slate-400 flex items-center gap-1 truncate"><i class="fa-solid fa-satellite-dish"></i> <span id="gpsText">Waiting...</span></span>
+                        </div>
                     </div>
                 </div>
 
@@ -666,6 +672,7 @@
             document.getElementById('lapBtn').addEventListener('click', recordLap);
             document.getElementById('pauseBtn').addEventListener('click', togglePause);
             document.getElementById('timerCard').addEventListener('click', toggleDurationMode);
+            document.getElementById('distanceCard').addEventListener('click', toggleDurationMode);
             document.getElementById('btnViewToggle').addEventListener('click', toggleView);
             document.getElementById('btnFullScreen').addEventListener('click', toggleFullScreen);
             document.getElementById('modeIndoorBtn').addEventListener('click', () => setCyclingMode('indoor'));
@@ -943,7 +950,7 @@
                 geoWatchId = navigator.geolocation.watchPosition(
                     (pos) => {
                         document.getElementById('gpsText').innerText = "Connected";
-                        document.getElementById('gpsStatusValue').className = "text-sm font-bold text-emerald-400 flex items-center gap-2";
+                        document.getElementById('gpsStatusValue').className = "text-xs md:text-sm font-bold text-emerald-400 flex items-center gap-1 truncate";
                         if (isPaused) return; 
                         
                         if (lastPosition) {
@@ -958,7 +965,7 @@
                         }
                         
                         document.getElementById('speedValue').innerText = currentSpeedMph.toFixed(1);
-                        document.getElementById('distanceValue').innerText = totalDistanceMiles.toFixed(2);
+                        updateDistanceDisplay();
 
                         if (timerInterval && !isPaused) {
                             sessionData.speedSum += currentSpeedMph; sessionData.speedCount++;
@@ -969,7 +976,7 @@
                     (err) => { 
                         log("GPS Error: " + err.message); 
                         document.getElementById('gpsText').innerText = "Error";
-                        document.getElementById('gpsStatusValue').className = "text-sm font-bold text-rose-400 flex items-center gap-2";
+                        document.getElementById('gpsStatusValue').className = "text-xs md:text-sm font-bold text-rose-400 flex items-center gap-1 truncate";
                     },
                     { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
                 );
@@ -1132,14 +1139,23 @@
                 document.getElementById('mainTimerLabel').innerHTML = `Current Lap <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
                 document.getElementById('subTimerLabel').innerText = "Total Duration";
                 document.getElementById('mainTimerLabel').classList.replace('text-slate-400', 'text-amber-400');
+                
+                document.getElementById('mainDistanceLabel').innerHTML = `Lap Distance <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
+                document.getElementById('subDistanceLabel').innerText = "Total Dist";
+                document.getElementById('mainDistanceLabel').classList.replace('text-slate-400', 'text-blue-400');
             } else {
                 displayMode = 'total';
                 document.getElementById('mainTimerLabel').innerHTML = `Total Duration <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
                 document.getElementById('subTimerLabel').innerText = "Current Lap";
                 document.getElementById('mainTimerLabel').classList.replace('text-amber-400', 'text-slate-400');
+                
+                document.getElementById('mainDistanceLabel').innerHTML = `Total Distance <i class="fa-solid fa-arrow-right-arrow-left ml-1 text-[10px] opacity-50"></i>`;
+                document.getElementById('subDistanceLabel').innerText = "Lap Dist";
+                document.getElementById('mainDistanceLabel').classList.replace('text-blue-400', 'text-slate-400');
             }
             updateTimers();
             updateAverages();
+            updateDistanceDisplay();
         }
 
         function updateHrZonesUI(hr) {
@@ -1361,7 +1377,7 @@
                 totalDistanceMiles = 0;
                 lapDistanceMiles = 0;
                 lastPosition = null;
-                document.getElementById('distanceValue').innerText = '0.00';
+                updateDistanceDisplay();
             } 
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
@@ -1405,7 +1421,7 @@
                 navigator.geolocation.clearWatch(geoWatchId);
                 geoWatchId = null;
                 document.getElementById('gpsText').innerText = "Stopped";
-                document.getElementById('gpsStatusValue').className = "text-sm font-bold text-slate-400 flex items-center gap-2";
+                document.getElementById('gpsStatusValue').className = "text-xs md:text-sm font-bold text-slate-400 flex items-center gap-1 truncate";
             }
             
             if (startTime) {
@@ -1457,7 +1473,22 @@
             lapOffsetSeconds = elapsedTime; 
             lapData = { rpmSum: 0, powerSum: 0, count: 0, hrSum: 0, hrCount: 0, speedSum: 0, speedCount: 0 };
             lapDistanceMiles = 0;
+            updateDistanceDisplay();
             log('Lap Recorded');
+        }
+
+        function updateDistanceDisplay() {
+            const mainVal = document.getElementById('mainDistanceValue');
+            const subVal = document.getElementById('subDistanceValue');
+            if (!mainVal || !subVal) return;
+
+            if (displayMode === 'total') {
+                mainVal.innerText = totalDistanceMiles.toFixed(2);
+                subVal.innerText = lapDistanceMiles.toFixed(2);
+            } else {
+                mainVal.innerText = lapDistanceMiles.toFixed(2);
+                subVal.innerText = totalDistanceMiles.toFixed(2);
+            }
         }
 
         // --- PREFERENCES & UTILS ---
